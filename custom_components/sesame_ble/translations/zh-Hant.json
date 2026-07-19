@@ -1,0 +1,50 @@
+{
+  "config": {
+    "flow_title": "{name} {identifier}",
+    "step": {
+      "user": {
+        "title": "選擇 SESAME 裝置",
+        "data": {
+          "address": "裝置"
+        }
+      },
+      "credentials": {
+        "title": "設定 {name}",
+        "description": "請為 {name}（{uuid}）輸入一種憑證。建議使用官方 App 的 Owner 或 Manager 分享 QR Code 解碼後的 URL。",
+        "data": {
+          "name": "名稱",
+          "share_url": "Owner 或 Manager 分享 URL",
+          "secret_key": "16-byte Secret Key（32 個十六進位字元）"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "無法透過已設定的 Bluetooth adapter 或 Proxy 連線",
+      "device_mismatch": "分享 URL 屬於另一個 SESAME 裝置",
+      "invalid_auth": "門鎖拒絕此憑證",
+      "invalid_credentials": "分享 URL 或 Secret Key 格式錯誤",
+      "not_supported": "尚未支援此 SESAME 型號",
+      "provide_one_credential": "請只輸入分享 URL 或 Secret Key 其中一項",
+      "unknown": "發生未預期的錯誤"
+    },
+    "abort": {
+      "already_configured": "此 SESAME 裝置已設定完成",
+      "no_devices_found": "沒有透過可連線 Bluetooth adapter 或 Proxy 找到尚未設定的 SESAME 5 Pro",
+      "not_supported": "偵測到的 Bluetooth 裝置不是支援的 SESAME 5 Pro"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "angle": {"name": "角度"},
+      "battery": {"name": "電量"},
+      "battery_voltage": {"name": "電池電壓"}
+    },
+    "binary_sensor": {
+      "battery_low": {"name": "低電量"}
+    }
+  },
+  "exceptions": {
+    "lock_failed": {"message": "無法透過 Bluetooth 將 SESAME 上鎖"},
+    "unlock_failed": {"message": "無法透過 Bluetooth 將 SESAME 解鎖"}
+  }
+}

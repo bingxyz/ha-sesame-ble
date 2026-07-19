@@ -1,0 +1,50 @@
+{
+  "config": {
+    "flow_title": "{name} {identifier}",
+    "step": {
+      "user": {
+        "title": "Choose a SESAME device",
+        "data": {
+          "address": "Device"
+        }
+      },
+      "credentials": {
+        "title": "Set up {name}",
+        "description": "Enter exactly one credential for {name} ({uuid}). The recommended option is an owner or manager share URL decoded from the official app QR code.",
+        "data": {
+          "name": "Name",
+          "share_url": "Owner or manager share URL",
+          "secret_key": "16-byte secret key (32 hexadecimal characters)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Unable to connect through a configured Bluetooth adapter or proxy",
+      "device_mismatch": "The share URL belongs to a different SESAME device",
+      "invalid_auth": "The lock rejected these credentials",
+      "invalid_credentials": "The share URL or secret key is invalid",
+      "not_supported": "This SESAME model is not supported",
+      "provide_one_credential": "Enter either a share URL or a secret key, but not both",
+      "unknown": "Unexpected error"
+    },
+    "abort": {
+      "already_configured": "This SESAME device is already configured",
+      "no_devices_found": "No unconfigured SESAME 5 Pro was found through a connectable Bluetooth adapter or proxy",
+      "not_supported": "The discovered Bluetooth device is not a supported SESAME 5 Pro"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "angle": {"name": "Angle"},
+      "battery": {"name": "Battery"},
+      "battery_voltage": {"name": "Battery voltage"}
+    },
+    "binary_sensor": {
+      "battery_low": {"name": "Low battery"}
+    }
+  },
+  "exceptions": {
+    "lock_failed": {"message": "Unable to lock the SESAME through Bluetooth"},
+    "unlock_failed": {"message": "Unable to unlock the SESAME through Bluetooth"}
+  }
+}
