@@ -1,14 +1,16 @@
 # HA Sesame BLE
 
-`ha-sesame-ble` is an experimental Home Assistant custom integration for local
-Bluetooth control of CANDY HOUSE SESAME smart locks.
+`ha-sesame-ble` is a Home Assistant custom integration for local Bluetooth
+control of CANDY HOUSE SESAME smart locks.
 
 The initial target is SESAME 5 Pro. Home Assistant owns the SESAME protocol
 session and connects through any reachable connectable Bluetooth adapter,
 including ESPHome Bluetooth proxies.
 
 > [!IMPORTANT]
-> This project is currently in the design phase. It does not control a lock yet.
+> The first implementation is complete and covered by automated tests, but it
+> still needs validation with a physical SESAME 5 Pro and ESPHome Bluetooth
+> proxies before it should be treated as production ready.
 
 ## Why this project exists
 
@@ -43,23 +45,67 @@ The YAML only provides BLE transport. Authentication, encryption, state and
 lock commands are implemented by this Home Assistant integration using the
 `gomalock` Python library.
 
-## Planned first release
+## First release
 
-- SESAME 5 Pro Bluetooth discovery
+- automatic SESAME 5 Pro Bluetooth discovery
 - setup through the Home Assistant UI
-- owner/manager QR URL or UUID plus secret-key input
-- lock and unlock actions
-- lock state, battery level and availability
-- connection retry through ESPHome Bluetooth proxies
-- selection of another reachable proxy after connection loss
-- diagnostics with secrets redacted
+- owner/manager share URL or 32-character secret-key input
+- explicit lock and unlock actions
+- lock state, jam indication and availability
+- angle, battery percentage and battery voltage sensors
+- bounded reconnect backoff and fresh Home Assistant BLE route selection after
+  connection loss
+- redacted diagnostics
+
+## Entities
+
+| Entity | Default | Description |
+| --- | --- | --- |
+| Lock | enabled | Locked/unlocked state plus lock and unlock commands |
+| Angle | enabled | Current mechanical angle in degrees |
+| Battery | enabled | Estimated battery percentage |
+| Battery voltage | disabled | Raw voltage reported by the lock |
+| Low battery | disabled | SESAME low-battery flag |
+
+State comes from SESAME mechanical-status notifications. If the lock is outside
+its calibrated lock and unlock ranges, the lock state is unknown while the angle
+sensor still reports its position.
+
+## Installation status
+
+The repository has the structure required by HACS. Distribution is intentionally
+not enabled yet because the integration depends on the transport hooks added to
+`gomalock` for this project. The manifest currently reserves `gomalock==2.2.0`;
+that version must first be released upstream or from a maintained fork.
+
+For local development, the sibling `../gomalock` checkout is used directly:
+
+```bash
+uv sync
+uv run pytest
+uv run ruff check .
+uv run mypy custom_components
+```
+
+After the dependency is published, add this repository as a HACS custom
+repository, install **Sesame BLE**, restart Home Assistant, and leave at least
+one connectable Bluetooth adapter or ESPHome proxy in range. The integration
+will appear in the discovered integrations list when it sees a SESAME 5 Pro.
+
+During setup, provide exactly one of:
+
+- an owner/manager `ssm://` share URL; or
+- the lock's 32-character hexadecimal secret key.
+
+Credentials are verified by making a real encrypted BLE login before the config
+entry is saved.
 
 ## Project boundaries
 
 - `ha-sesame-ble` is the Home Assistant integration and is maintained as this
   project's primary deliverable.
-- `gomalock` remains an independent protocol library. It needs a small,
-  backward-compatible transport extension for Home Assistant.
+- `gomalock` remains an independent protocol library. This workspace contains a
+  backward-compatible transport extension for Home Assistant routing.
 - `esphome-sesame3` and `libsesame3bt` are useful references, but are not runtime
   dependencies of this architecture.
 - SESAME history synchronization and support for older SESAME OS2 products are
@@ -76,4 +122,3 @@ decisions, risks and implementation plan.
 - [Home Assistant Bluetooth developer documentation](https://developers.home-assistant.io/docs/bluetooth/)
 - [Home Assistant Bluetooth APIs](https://developers.home-assistant.io/docs/core/bluetooth/api/)
 - [Existing Home Assistant Sesame integration](https://www.home-assistant.io/integrations/sesame/)
-
