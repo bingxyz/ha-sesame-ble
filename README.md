@@ -73,10 +73,10 @@ sensor still reports its position.
 
 ## Installation status
 
-The repository has the structure required by HACS. Distribution is intentionally
-not enabled yet because the integration depends on the transport hooks added to
-`gomalock` for this project. The manifest currently reserves `gomalock==2.2.0`;
-that version must first be released upstream or from a maintained fork.
+The repository has the structure required by HACS. During hardware testing, the
+manifest installs `gomalock` 2.2.0 from an immutable commit in the maintained
+`bingxyz/gomalock` fork. This can later switch back to a PyPI release if the
+transport hooks are accepted upstream.
 
 For local development, the sibling `../gomalock` checkout is used directly:
 
