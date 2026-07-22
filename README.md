@@ -8,9 +8,9 @@ session and connects through any reachable connectable Bluetooth adapter,
 including ESPHome Bluetooth proxies.
 
 > [!IMPORTANT]
-> The first implementation is complete and covered by automated tests, but it
-> still needs validation with a physical SESAME 5 Pro and ESPHome Bluetooth
-> proxies before it should be treated as production ready.
+> The first implementation is complete, covered by automated tests, and has
+> been validated with a physical SESAME 5 Pro through an ESPHome Bluetooth
+> proxy. Proxy failover and longer-term operation still need validation.
 
 ## Why this project exists
 
@@ -75,8 +75,11 @@ sensor still reports its position.
 
 The repository has the structure required by HACS. During hardware testing, the
 manifest installs `gomalock` 2.2.0 from an immutable commit in the maintained
-`bingxyz/gomalock` fork. This can later switch back to a PyPI release if the
-transport hooks are accepted upstream.
+[`bingxyz/gomalock`](https://github.com/bingxyz/gomalock) fork. That fork adds
+Home Assistant BLE routing and disconnect hooks on top of the original
+[`meronepy/gomalock`](https://github.com/meronepy/gomalock) project. This can
+later switch back to a PyPI release if the transport hooks are accepted
+upstream.
 
 For local development, the sibling `../gomalock` checkout is used directly:
 
@@ -87,10 +90,10 @@ uv run ruff check .
 uv run mypy custom_components
 ```
 
-After the dependency is published, add this repository as a HACS custom
-repository, install **Sesame BLE**, restart Home Assistant, and leave at least
-one connectable Bluetooth adapter or ESPHome proxy in range. The integration
-will appear in the discovered integrations list when it sees a SESAME 5 Pro.
+After this repository is hosted on GitHub, add it as a HACS custom repository,
+install **Sesame BLE**, restart Home Assistant, and leave at least one
+connectable Bluetooth adapter or ESPHome proxy in range. The integration will
+appear in the discovered integrations list when it sees a SESAME 5 Pro.
 
 During setup, provide exactly one of:
 
@@ -117,7 +120,8 @@ decisions, risks and implementation plan.
 ## References
 
 - [CANDY HOUSE API documentation](https://github.com/CANDY-HOUSE/API_document)
-- [gomalock](https://github.com/meronepy/gomalock)
+- [gomalock upstream](https://github.com/meronepy/gomalock)
+- [gomalock HA transport fork](https://github.com/bingxyz/gomalock)
 - [esphome-sesame3](https://github.com/homy-newfs8/esphome-sesame3)
 - [Home Assistant Bluetooth developer documentation](https://developers.home-assistant.io/docs/bluetooth/)
 - [Home Assistant Bluetooth APIs](https://developers.home-assistant.io/docs/core/bluetooth/api/)
