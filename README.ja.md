@@ -1,5 +1,9 @@
 # HA Sesame BLE
 
+<p align="center">
+  <img src="custom_components/sesame_ble/brand/icon.png" alt="HA Sesame BLE icon" width="180">
+</p>
+
 [![GitHub Release](https://img.shields.io/github/v/release/bingxyz/ha-sesame-ble?color=ff336c)](https://github.com/bingxyz/ha-sesame-ble/releases)
 [![CI](https://github.com/bingxyz/ha-sesame-ble/actions/workflows/ci.yml/badge.svg)](https://github.com/bingxyz/ha-sesame-ble/actions/workflows/ci.yml)
 [![Validate](https://github.com/bingxyz/ha-sesame-ble/actions/workflows/validate.yml/badge.svg)](https://github.com/bingxyz/ha-sesame-ble/actions/workflows/validate.yml)
