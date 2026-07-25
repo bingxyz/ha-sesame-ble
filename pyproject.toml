@@ -1,6 +1,6 @@
 [project]
 name = "ha-sesame-ble"
-version = "0.1.0"
+version = "0.1.1"
 description = "Local Home Assistant BLE integration for CANDY HOUSE SESAME locks"
 requires-python = ">=3.14"
 license = "MIT"

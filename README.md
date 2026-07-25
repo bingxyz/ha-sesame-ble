@@ -151,12 +151,12 @@ HACS installs integrations under the Home Assistant configuration directory's
 `custom_components/` folder. Future releases can be installed and upgraded
 from the same HACS repository entry.
 
-The `v0.1.0` manifest installs `gomalock` 2.2.0 from an immutable commit in the
-maintained [`bingxyz/gomalock`](https://github.com/bingxyz/gomalock) fork. That
-fork adds Home Assistant BLE routing and disconnect hooks on top of the original
-[`meronepy/gomalock`](https://github.com/meronepy/gomalock) project. This can
-later switch back to a PyPI release if the transport hooks are accepted
-upstream.
+The integration currently installs `gomalock` 2.2.0 from an immutable commit
+in the maintained [`bingxyz/gomalock`](https://github.com/bingxyz/gomalock)
+fork. That fork adds Home Assistant BLE routing and disconnect hooks on top of
+the original [`meronepy/gomalock`](https://github.com/meronepy/gomalock)
+project. This can later switch back to a PyPI release if the transport hooks
+are accepted upstream.
 
 For local development, the sibling `../gomalock` checkout is used directly:
 

@@ -148,7 +148,7 @@ HACSは、Home Assistant設定ディレクトリの`custom_components/`フォル
 インテグレーションをインストールします。今後のリリースも、同じHACS
 リポジトリエントリーからインストールおよび更新できます。
 
-`v0.1.0`のmanifestは、メンテナンスされている
+現在のインテグレーションは、メンテナンスされている
 [`bingxyz/gomalock`](https://github.com/bingxyz/gomalock) forkの不変commit
 から`gomalock` 2.2.0をインストールします。このforkは、元の
 [`meronepy/gomalock`](https://github.com/meronepy/gomalock)プロジェクトに

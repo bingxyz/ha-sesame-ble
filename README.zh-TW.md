@@ -137,7 +137,7 @@ Assistant 整合使用 `gomalock` Python 函式庫實作。
 HACS 會將整合安裝到 Home Assistant 設定目錄的 `custom_components/`
 資料夾，未來版本也能從同一筆 HACS repository 安裝及更新。
 
-`v0.1.0` manifest 會從維護中的
+目前整合會從維護中的
 [`bingxyz/gomalock`](https://github.com/bingxyz/gomalock) fork，以不可變的
 commit 安裝 `gomalock` 2.2.0。這個 fork 在原始
 [`meronepy/gomalock`](https://github.com/meronepy/gomalock) 專案上加入
