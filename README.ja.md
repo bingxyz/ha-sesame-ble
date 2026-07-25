@@ -2,12 +2,17 @@
 
 [English](README.md) | [日本語](README.ja.md) | [繁體中文](README.zh-TW.md)
 
-`ha-sesame-ble` は、CANDY HOUSEのSESAMEスマートロックをローカルの
-Bluetooth経由で操作するHome Assistantカスタムインテグレーションです。
+`ha-sesame-ble`は、CANDY HOUSEのSESAMEスマートロックをHome Assistant
+から直接操作しながら、ESP32を標準的で交換可能なBluetooth Proxyとして
+維持するカスタムインテグレーションです。ESP32側にSESAME専用のESPHome
+componentやファームウェアは必要ありません。
 
-バージョン`0.1.x`は**SESAME 5 Proのみ**をサポートします。SESAME
-プロトコルのセッションはHome Assistantが管理し、ESPHome Bluetooth
-Proxyを含む、接続可能な任意のBluetoothアダプター経由で接続します。
+ESP32が1台だけでも、この設計には利点があります。SESAMEの認証、暗号化、
+状態、コマンドロジックはHome Assistantが管理し、ESP32は汎用BLE転送だけを
+担当するため、ほかのBluetoothデバイスにも引き続き利用できます。
+
+バージョン`0.1.x`は**SESAME 5 Proのみ**をサポートし、ローカルBluetooth
+アダプターまたはESPHome Bluetooth Proxy経由で接続できます。
 
 > [!IMPORTANT]
 > 初期実装は完成しており、自動テストに加えて、ESPHome Bluetooth Proxy
@@ -30,16 +35,33 @@ Proxyを含む、接続可能な任意のBluetoothアダプター経由で接続
 
 ## このプロジェクトの目的
 
+中心となる目的は、ESP32を専用のロックコントローラーにするのではなく、
+SESAME固有のロジックをHome Assistant側に置くことです。
+
+- カスタムcomponentなしで、通常のESPHome Bluetooth Proxyを使用
+- ESP32を再コンパイル・再書き込みせずに、インテグレーションを更新、
+  テスト、デバッグ
+- 認証情報、デバイス状態、オートメーション、バックアップ／復元の流れを
+  Home Assistantに集約
+- 同じESP32をほかのBluetoothデバイスにも再利用
+- SESAME専用ファームウェアやロジックを移行せずにESP32を交換
+
+つまり、ESP32をロックコントローラーではなく、交換可能なBluetooth
+ネットワークアダプターとして扱います。
+
 Home Assistantに既存の`sesame`インテグレーションは、初代SESAME Lockと
 Wi-Fi Access Point向けの旧式クラウドポーリング連携です。SESAME 5 Pro
 向けのローカルBLEインテグレーションではありません。
 
 サードパーティーの`esphome-sesame3`は、1台のESP32からSESAMEを直接操作
-できますが、プロトコルセッションもそのESP32が保持します。そのESP32が
-オフラインになると、ほかのBluetooth Proxyは引き継げません。
+できますが、プロトコルセッションとロック固有のロジックもそのESP32が
+保持します。この構成はHome Assistantを使用しない場合や、制御ロジックを
+マイクロコントローラー上で独立して動作させる必要がある場合に適しています。
+Home Assistantがすでにシステムの中心であれば、必須ではありません。
 
-本プロジェクトでは、通常のESPHome Bluetooth Proxyを交換可能なまま
-利用できます。
+プロトコルをHome Assistant側に置くことで、複数Proxyにも追加の利点が
+生まれます。すべてのProxyが同じインテグレーション状態を共有し、切断後は
+Home Assistantが到達可能なBLE経路を再選択できます。
 
 ```text
 SESAME 5 Pro

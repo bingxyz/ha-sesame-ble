@@ -2,12 +2,16 @@
 
 [English](README.md) | [日本語](README.ja.md) | [繁體中文](README.zh-TW.md)
 
-`ha-sesame-ble` 是透過本地 Bluetooth 控制 CANDY HOUSE SESAME 智慧門鎖的
-Home Assistant 自訂整合。
+`ha-sesame-ble` 是直接從 Home Assistant 控制 CANDY HOUSE SESAME 智慧
+門鎖的自訂整合，同時讓 ESP32 保持為標準、可替換的 Bluetooth Proxy——
+ESP32 不需要任何 SESAME 專用 ESPHome component 或韌體。
 
-`0.1.x` 版**僅支援 SESAME 5 Pro**。SESAME 通訊協定 session 由 Home
-Assistant 管理，並可透過任何可連線的 Bluetooth adapter（包含 ESPHome
-Bluetooth Proxy）連接門鎖。
+即使只有一顆 ESP32，這個架構仍然有價值。SESAME 的驗證、加密、狀態及
+命令邏輯由 Home Assistant 管理；ESP32 只提供通用 BLE 傳輸，也能繼續
+服務其他 Bluetooth 裝置。
+
+`0.1.x` 版**僅支援 SESAME 5 Pro**，可透過本機 Bluetooth adapter 或
+ESPHome Bluetooth Proxy 連接。
 
 > [!IMPORTANT]
 > 第一版功能已完成並有自動化測試，也已透過 ESPHome Bluetooth Proxy
@@ -28,13 +32,28 @@ Bluetooth Proxy）連接門鎖。
 
 ## 為什麼需要這個專案
 
+核心目標是將 SESAME 專用邏輯保留在 Home Assistant，而不是把 ESP32
+變成專用門鎖控制器：
+
+- 使用一般 ESPHome Bluetooth Proxy，不需要自訂 component
+- 更新、測試及除錯整合時，不需要重新編譯或刷寫 ESP32
+- 將憑證、裝置狀態、自動化及備份還原流程集中在 Home Assistant
+- 同一顆 ESP32 仍可服務其他 Bluetooth 裝置
+- 更換 ESP32 時，不需要遷移 SESAME 專用韌體或邏輯
+
+簡單來說，ESP32 是可替換的藍牙網路卡，而不是門鎖控制器。
+
 Home Assistant 現有的 `sesame` 整合，是針對初代 SESAME Lock 及其 Wi-Fi
 Access Point 的舊式雲端輪詢整合，不是 SESAME 5 Pro 的本地 BLE 整合。
 
 第三方 `esphome-sesame3` 專案可以讓一顆 ESP32 直接控制 SESAME，但通訊
-session 也會由該 ESP32 持有；如果它離線，其他 Bluetooth Proxy 無法接手。
+session 及門鎖專用邏輯也會由該 ESP32 持有。這種架構適合沒有 Home
+Assistant，或控制邏輯必須獨立運行在微控制器上的情境；如果 Home Assistant
+本來就是整套系統的中心，便不需要如此部署。
 
-本專案讓一般 ESPHome Bluetooth Proxy 保持可替換：
+將通訊協定保留在 Home Assistant，也會帶來額外的多 Proxy 優勢：所有
+Proxy 共用同一份整合狀態，斷線後 Home Assistant 可以重新選擇可達的
+BLE 路徑。
 
 ```text
 SESAME 5 Pro

@@ -2,12 +2,17 @@
 
 [English](README.md) | [日本語](README.ja.md) | [繁體中文](README.zh-TW.md)
 
-`ha-sesame-ble` is a Home Assistant custom integration for local Bluetooth
-control of CANDY HOUSE SESAME smart locks.
+`ha-sesame-ble` is a Home Assistant custom integration that controls CANDY
+HOUSE SESAME smart locks directly while keeping ESP32 devices as standard,
+replaceable Bluetooth proxies—no SESAME-specific ESPHome component or firmware
+is required.
 
-Version `0.1.x` supports **SESAME 5 Pro only**. Home Assistant owns the SESAME
-protocol session and connects through any reachable connectable Bluetooth
-adapter, including ESPHome Bluetooth proxies.
+This design is useful even with only one ESP32. Home Assistant owns the SESAME
+authentication, encryption, state and command logic; the ESP32 provides only
+generic BLE transport and can continue serving other Bluetooth devices.
+
+Version `0.1.x` supports **SESAME 5 Pro only** and can connect through a local
+Bluetooth adapter or an ESPHome Bluetooth proxy.
 
 > [!IMPORTANT]
 > The first implementation is complete, covered by automated tests, and has
@@ -30,15 +35,33 @@ enabled model by model only after protocol and hardware validation.
 
 ## Why this project exists
 
+The core goal is to keep SESAME-specific logic in Home Assistant instead of
+turning an ESP32 into a dedicated lock controller:
+
+- use an ordinary ESPHome Bluetooth proxy without custom components
+- update, test and debug the integration without recompiling or flashing an
+  ESP32
+- keep credentials, device state, automations and backup/restore workflows
+  centered in Home Assistant
+- reuse the same ESP32 for other Bluetooth devices
+- replace the ESP32 without migrating SESAME-specific firmware or logic
+
+In short, the ESP32 acts as a replaceable Bluetooth network adapter, not as the
+lock controller.
+
 The existing Home Assistant `sesame` integration is a legacy cloud-polling
 integration for the original SESAME Lock and its Wi-Fi Access Point. It is not a
 local BLE integration for SESAME 5 Pro.
 
 The third-party `esphome-sesame3` project can control SESAME directly from one
-ESP32, but the protocol session is then owned by that ESP32. Other Bluetooth
-proxies cannot take over if that ESP32 goes offline.
+ESP32, but the protocol session and lock-specific logic are then owned by that
+ESP32. That approach can be useful without Home Assistant or when control logic
+must run independently on the microcontroller; it is not required when Home
+Assistant is already the center of the installation.
 
-This project instead keeps ordinary ESPHome Bluetooth proxies interchangeable:
+Support for multiple Bluetooth proxies is an additional benefit of keeping the
+protocol in Home Assistant: all proxies share the same integration state, and
+Home Assistant can select a fresh reachable BLE route after a disconnection.
 
 ```text
 SESAME 5 Pro
