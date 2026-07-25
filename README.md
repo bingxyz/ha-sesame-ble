@@ -3,14 +3,28 @@
 `ha-sesame-ble` is a Home Assistant custom integration for local Bluetooth
 control of CANDY HOUSE SESAME smart locks.
 
-The initial target is SESAME 5 Pro. Home Assistant owns the SESAME protocol
-session and connects through any reachable connectable Bluetooth adapter,
-including ESPHome Bluetooth proxies.
+Version `0.1.x` supports **SESAME 5 Pro only**. Home Assistant owns the SESAME
+protocol session and connects through any reachable connectable Bluetooth
+adapter, including ESPHome Bluetooth proxies.
 
 > [!IMPORTANT]
 > The first implementation is complete, covered by automated tests, and has
 > been validated with a physical SESAME 5 Pro through an ESPHome Bluetooth
 > proxy. Proxy failover and longer-term operation still need validation.
+
+## Supported models
+
+| Model | Status |
+| --- | --- |
+| SESAME 5 Pro | Supported and tested with physical hardware |
+| SESAME 5 | Not enabled in `0.1.x`; the underlying library supports it, but this integration has not validated it |
+| SESAME 5 US | Not enabled in `0.1.x`; the underlying library supports it, but this integration has not validated it |
+| SESAME 6 family and all other CANDY HOUSE products | Not supported |
+
+The integration intentionally rejects Bluetooth discovery from every model
+except SESAME 5 Pro. Related models will not appear in the setup flow merely
+because they share the CANDY HOUSE Bluetooth service UUID. Support will be
+enabled model by model only after protocol and hardware validation.
 
 ## Why this project exists
 
