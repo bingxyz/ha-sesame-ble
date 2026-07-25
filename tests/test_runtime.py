@@ -3,10 +3,11 @@
 from unittest.mock import AsyncMock, Mock, patch
 
 from gomalock import Sesame5MechStatus
+from homeassistant.components.bluetooth import BluetoothChange
 
 from custom_components.sesame_ble.runtime import SesameRuntime
 
-from .helpers import TEST_ADDRESS, TEST_SECRET, TEST_UUID
+from .helpers import TEST_ADDRESS, TEST_SECRET, TEST_UUID, make_service_info
 
 
 async def test_runtime_connects_and_sends_explicit_commands() -> None:
@@ -30,6 +31,8 @@ async def test_runtime_connects_and_sends_explicit_commands() -> None:
     device.lock = AsyncMock()
     device.unlock = AsyncMock()
     hass = Mock()
+    service_info = make_service_info()
+    unsubscribe_bluetooth = Mock()
 
     with (
         patch(
@@ -44,6 +47,14 @@ async def test_runtime_connects_and_sends_explicit_commands() -> None:
             "custom_components.sesame_ble.runtime.make_ble_client_factory",
             return_value=Mock(),
         ),
+        patch(
+            "custom_components.sesame_ble.runtime.bluetooth.async_last_service_info",
+            return_value=service_info,
+        ),
+        patch(
+            "custom_components.sesame_ble.runtime.bluetooth.async_register_callback",
+            return_value=unsubscribe_bluetooth,
+        ) as register_callback,
     ):
         runtime = SesameRuntime(
             hass,
@@ -53,10 +64,17 @@ async def test_runtime_connects_and_sends_explicit_commands() -> None:
             name="Entrance",
         )
 
-    await runtime.async_start()
-    await runtime.async_set_locked(locked=False)
-    await runtime.async_set_locked(locked=True)
-    await runtime.async_stop()
+        await runtime.async_start()
+        bluetooth_callback = register_callback.call_args.args[1]
+        assert runtime.rssi == -52
+
+        newer_service_info = make_service_info(rssi=-61)
+        bluetooth_callback(newer_service_info, BluetoothChange.ADVERTISEMENT)
+        assert runtime.rssi == -61
+
+        await runtime.async_set_locked(locked=False)
+        await runtime.async_set_locked(locked=True)
+        await runtime.async_stop()
 
     assert runtime.available is False
     device.connect.assert_awaited_once_with()
@@ -64,3 +82,4 @@ async def test_runtime_connects_and_sends_explicit_commands() -> None:
     device.unlock.assert_awaited_once_with("Home Assistant")
     device.lock.assert_awaited_once_with("Home Assistant")
     device.disconnect.assert_awaited_once_with()
+    unsubscribe_bluetooth.assert_called_once_with()

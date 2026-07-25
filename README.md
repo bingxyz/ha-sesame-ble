@@ -52,7 +52,7 @@ lock commands are implemented by this Home Assistant integration using the
 - owner/manager share URL or 32-character secret-key input
 - explicit lock and unlock actions
 - lock state, jam indication and availability
-- angle, battery percentage and battery voltage sensors
+- angle, battery percentage, battery voltage and Bluetooth signal strength sensors
 - bounded reconnect backoff and fresh Home Assistant BLE route selection after
   connection loss
 - redacted diagnostics
@@ -65,11 +65,17 @@ lock commands are implemented by this Home Assistant integration using the
 | Angle | enabled | Current mechanical angle in degrees |
 | Battery | enabled | Estimated battery percentage |
 | Battery voltage | disabled | Raw voltage reported by the lock |
+| Signal strength | disabled | RSSI from the latest connectable BLE advertisement |
 | Low battery | disabled | SESAME low-battery flag |
 
 State comes from SESAME mechanical-status notifications. If the lock is outside
 its calibrated lock and unlock ranges, the lock state is unknown while the angle
 sensor still reports its position.
+
+Signal strength is diagnostic data from the latest advertisement received by
+Home Assistant or an ESPHome Bluetooth proxy. It is not a live measurement from
+the persistent GATT connection and may remain unchanged while the lock is
+connected.
 
 ## Installation status
 

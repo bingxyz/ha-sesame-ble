@@ -21,6 +21,7 @@ def make_service_info(
     registered: bool = True,
     device_uuid: UUID = TEST_UUID,
     connectable: bool = True,
+    rssi: int = -52,
 ) -> BluetoothServiceInfoBleak:
     """Build a realistic Sesame advertisement for tests."""
     manufacturer_data = struct.pack(
@@ -36,7 +37,7 @@ def make_service_info(
         service_data={},
         service_uuids=[SESAME_SERVICE_UUID],
         tx_power=None,
-        rssi=-52,
+        rssi=rssi,
         platform_data=(),
     )
     return BluetoothServiceInfoBleak.from_device_and_advertisement_data(

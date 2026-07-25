@@ -13,7 +13,13 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import DEGREE, PERCENTAGE, UnitOfElectricPotential
+from homeassistant.const import (
+    DEGREE,
+    PERCENTAGE,
+    SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
+    EntityCategory,
+    UnitOfElectricPotential,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
@@ -65,8 +71,12 @@ async def async_setup_entry(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up Sesame sensors."""
+    runtime = entry.runtime_data
     async_add_entities(
-        SesameSensor(entry.runtime_data, description) for description in SENSORS
+        [
+            *(SesameSensor(runtime, description) for description in SENSORS),
+            SesameSignalStrengthSensor(runtime),
+        ]
     )
 
 
@@ -92,3 +102,24 @@ class SesameSensor(SesameEntity, SensorEntity):
         if status is None:
             return None
         return self.entity_description.value_fn(status)
+
+
+class SesameSignalStrengthSensor(SesameEntity, SensorEntity):
+    """Expose signal strength from the latest connectable advertisement."""
+
+    _attr_device_class = SensorDeviceClass.SIGNAL_STRENGTH
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_entity_registry_enabled_default = False
+    _attr_native_unit_of_measurement = SIGNAL_STRENGTH_DECIBELS_MILLIWATT
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_translation_key = "signal_strength"
+
+    def __init__(self, runtime: SesameRuntime) -> None:
+        """Initialize the signal-strength sensor."""
+        super().__init__(runtime)
+        self._attr_unique_id = f"{runtime.device_uuid}_signal_strength"
+
+    @property
+    def native_value(self) -> int | None:
+        """Return RSSI from the latest connectable BLE advertisement."""
+        return self.runtime.rssi

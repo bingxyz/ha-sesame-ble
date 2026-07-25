@@ -38,7 +38,8 @@
     "sensor": {
       "angle": {"name": "Angle"},
       "battery": {"name": "Battery"},
-      "battery_voltage": {"name": "Battery voltage"}
+      "battery_voltage": {"name": "Battery voltage"},
+      "signal_strength": {"name": "Signal strength"}
     },
     "binary_sensor": {
       "battery_low": {"name": "Low battery"}

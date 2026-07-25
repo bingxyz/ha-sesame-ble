@@ -37,7 +37,8 @@
     "sensor": {
       "angle": {"name": "角度"},
       "battery": {"name": "電量"},
-      "battery_voltage": {"name": "電池電壓"}
+      "battery_voltage": {"name": "電池電壓"},
+      "signal_strength": {"name": "藍牙訊號強度"}
     },
     "binary_sensor": {
       "battery_low": {"name": "低電量"}

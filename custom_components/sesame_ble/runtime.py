@@ -9,6 +9,12 @@ from contextlib import suppress
 from typing import cast
 
 from gomalock import Sesame5, Sesame5MechStatus
+from homeassistant.components import bluetooth
+from homeassistant.components.bluetooth import (
+    BluetoothChange,
+    BluetoothScanningMode,
+    BluetoothServiceInfoBleak,
+)
 from homeassistant.core import HomeAssistant, callback
 
 from .bluetooth import make_ble_client_factory, make_ble_device_resolver
@@ -37,10 +43,12 @@ class SesameRuntime:
         self.available = False
         self.mech_status: Sesame5MechStatus | None = None
         self.pending_locked: bool | None = None
+        self.rssi: int | None = None
 
         self._listeners: set[Callable[[], None]] = set()
         self._operation_lock = asyncio.Lock()
         self._reconnect_task: asyncio.Task[None] | None = None
+        self._unsubscribe_bluetooth: Callable[[], None] | None = None
         self._stopping = False
         self.device = Sesame5(
             address,
@@ -81,6 +89,18 @@ class SesameRuntime:
         self._notify_listeners()
 
     @callback
+    def _handle_bluetooth_advertisement(
+        self,
+        service_info: BluetoothServiceInfoBleak,
+        _change: BluetoothChange,
+    ) -> None:
+        """Store signal strength from the latest connectable advertisement."""
+        if service_info.rssi == self.rssi:
+            return
+        self.rssi = service_info.rssi
+        self._notify_listeners()
+
+    @callback
     def _handle_unexpected_disconnect(self, _device: Sesame5) -> None:
         """Mark unavailable and schedule a fresh HA-routed connection."""
         self.available = False
@@ -98,6 +118,20 @@ class SesameRuntime:
     async def async_start(self) -> None:
         """Connect and authenticate the persistent session."""
         self._stopping = False
+        service_info = bluetooth.async_last_service_info(
+            self.hass,
+            self.address,
+            connectable=True,
+        )
+        if service_info is not None:
+            self.rssi = service_info.rssi
+        if self._unsubscribe_bluetooth is None:
+            self._unsubscribe_bluetooth = bluetooth.async_register_callback(
+                self.hass,
+                self._handle_bluetooth_advertisement,
+                {"address": self.address, "connectable": True},
+                BluetoothScanningMode.PASSIVE,
+            )
         async with self._operation_lock:
             await self._async_connect_locked()
 
@@ -162,6 +196,10 @@ class SesameRuntime:
     async def async_stop(self) -> None:
         """Stop reconnect work and close the BLE connection."""
         self._stopping = True
+        unsubscribe_bluetooth = self._unsubscribe_bluetooth
+        self._unsubscribe_bluetooth = None
+        if unsubscribe_bluetooth is not None:
+            unsubscribe_bluetooth()
         reconnect_task = self._reconnect_task
         self._reconnect_task = None
         if reconnect_task is not None and not reconnect_task.done():

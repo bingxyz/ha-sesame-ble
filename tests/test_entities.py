@@ -4,9 +4,15 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
 from gomalock import Sesame5MechStatus
+from homeassistant.components.sensor import SensorDeviceClass
+from homeassistant.const import EntityCategory
 
 from custom_components.sesame_ble.lock import SesameLockEntity
-from custom_components.sesame_ble.sensor import SENSORS, SesameSensor
+from custom_components.sesame_ble.sensor import (
+    SENSORS,
+    SesameSensor,
+    SesameSignalStrengthSensor,
+)
 
 from .helpers import TEST_ADDRESS, TEST_UUID
 
@@ -20,6 +26,7 @@ def make_runtime(*, flags: int, position: int = 256) -> SimpleNamespace:
         available=True,
         pending_locked=None,
         mech_status=Sesame5MechStatus(2500, flags, target=0, position=position),
+        rssi=-52,
         async_add_listener=lambda _listener: lambda: None,
         async_set_locked=AsyncMock(),
     )
@@ -38,6 +45,16 @@ def test_lock_and_sensor_state() -> None:
     assert sensors["angle"].native_value == 90.0
     assert sensors["battery"].native_value is not None
     assert sensors["battery_voltage"].native_value == 5.0
+
+
+def test_signal_strength_sensor() -> None:
+    """Expose the latest advertisement RSSI as disabled diagnostic data."""
+    sensor = SesameSignalStrengthSensor(make_runtime(flags=0b00010010))
+
+    assert sensor.native_value == -52
+    assert sensor.device_class is SensorDeviceClass.SIGNAL_STRENGTH
+    assert sensor.entity_category is EntityCategory.DIAGNOSTIC
+    assert sensor.entity_registry_enabled_default is False
 
 
 def test_unlock_and_jammed_state() -> None:
