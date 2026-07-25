@@ -1,5 +1,7 @@
 # HA Sesame BLE
 
+[English](README.md) | [日本語](README.ja.md) | [繁體中文](README.zh-TW.md)
+
 `ha-sesame-ble` is a Home Assistant custom integration for local Bluetooth
 control of CANDY HOUSE SESAME smart locks.
 

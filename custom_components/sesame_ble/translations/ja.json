@@ -1,0 +1,59 @@
+{
+  "config": {
+    "flow_title": "{name} {identifier}",
+    "step": {
+      "user": {
+        "title": "SESAMEデバイスを選択",
+        "data": {
+          "address": "デバイス"
+        }
+      },
+      "credentials": {
+        "title": "{name}を設定",
+        "description": "{name}（{uuid}）の認証情報を1つだけ入力してください。公式アプリのオーナーまたはマネージャー共有QRコードから読み取ったURLの使用を推奨します。",
+        "data": {
+          "name": "名前",
+          "share_url": "オーナーまたはマネージャー共有URL",
+          "secret_key": "16バイトのシークレットキー（16進数32文字）"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "設定済みのBluetoothアダプターまたはプロキシ経由で接続できません",
+      "device_mismatch": "共有URLは別のSESAMEデバイスのものです",
+      "invalid_auth": "ロックがこの認証情報を拒否しました",
+      "invalid_credentials": "共有URLまたはシークレットキーが無効です",
+      "not_supported": "このSESAMEモデルはサポートされていません",
+      "provide_one_credential": "共有URLまたはシークレットキーのどちらか一方だけを入力してください",
+      "unknown": "予期しないエラーが発生しました"
+    },
+    "abort": {
+      "already_configured": "このSESAMEデバイスは設定済みです",
+      "no_devices_found": "接続可能なBluetoothアダプターまたはプロキシ経由で、未設定のSESAME 5 Proが見つかりませんでした",
+      "not_supported": "検出されたBluetoothデバイスは、サポート対象のSESAME 5 Proではありません"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "angle": {"name": "角度"},
+      "battery": {"name": "バッテリー"},
+      "battery_voltage": {"name": "バッテリー電圧"},
+      "last_operation_duration": {"name": "前回のHA操作時間"},
+      "last_operation_result": {
+        "name": "前回のHA操作結果",
+        "state": {
+          "failed": "失敗",
+          "success": "成功"
+        }
+      },
+      "signal_strength": {"name": "Bluetooth信号強度"}
+    },
+    "binary_sensor": {
+      "battery_low": {"name": "バッテリー残量低下"}
+    }
+  },
+  "exceptions": {
+    "lock_failed": {"message": "Bluetooth経由でSESAMEを施錠できません"},
+    "unlock_failed": {"message": "Bluetooth経由でSESAMEを解錠できません"}
+  }
+}
