@@ -29,7 +29,7 @@ ESP32が1台だけでも、この設計には利点があります。SESAMEの�
 > 経由で実機のSESAME 5 Proを使った検証も完了しています。Proxyの
 > フェイルオーバーと長期運用については、引き続き検証が必要です。
 
-## 対応モデル
+## ✅ 対応モデル
 
 | モデル | 対応状況 |
 | --- | --- |
@@ -43,7 +43,7 @@ ESP32が1台だけでも、この設計には利点があります。SESAMEの�
 関連モデルであっても、設定フローには表示されません。各モデルの対応は、
 プロトコルと実機での検証後に個別に有効化します。
 
-## このプロジェクトの目的
+## 🔐 このプロジェクトの目的
 
 中心となる目的は、ESP32を専用のロックコントローラーにするのではなく、
 SESAME固有のロジックをHome Assistant側に置くことです。
@@ -94,7 +94,7 @@ bluetooth_proxy:
 解錠コマンドは、`gomalock` Pythonライブラリを利用するこのHome Assistant
 インテグレーションが実装します。
 
-## 初期リリースの機能
+## ✨ 初期リリースの機能
 
 - SESAME 5 Pro Bluetoothデバイスの自動検出
 - Home Assistant UIからの設定
@@ -106,7 +106,7 @@ bluetooth_proxy:
 - 上限付きの再接続バックオフと、切断後のHome Assistant BLE経路再選択
 - 機密情報を除外した診断情報
 
-## エンティティ
+## 📊 エンティティ
 
 | エンティティ | デフォルト | 説明 |
 | --- | --- | --- |
@@ -131,7 +131,7 @@ bluetooth_proxy:
 必要な再接続とログイン時間も含まれます。成功はSESAMEがコマンドを受け付けた
 ことを意味し、機械的な動作不良はロックエンティティのjammed状態で報告されます。
 
-## インストール
+## 📦 インストール
 
 このリポジトリはHACSのカスタムリポジトリとしてインストールできます。
 
@@ -172,7 +172,7 @@ uv run mypy custom_components
 config entryを保存する前に、実際の暗号化BLEログインを行って認証情報を
 検証します。
 
-## プロジェクトの範囲
+## 🧭 プロジェクトの範囲
 
 - `ha-sesame-ble`はHome Assistantインテグレーションであり、この
   プロジェクトの主要な成果物としてメンテナンスします。
@@ -186,7 +186,7 @@ config entryを保存する前に、実際の暗号化BLEログインを行っ�
 すべての分析、設計判断、リスク、実装計画については、
 [Research and design](docs/research-and-design.md)（英語）を参照してください。
 
-## 参考資料
+## 🔗 参考資料
 
 - [CANDY HOUSE APIドキュメント](https://github.com/CANDY-HOUSE/API_document)
 - [gomalock upstream](https://github.com/meronepy/gomalock)

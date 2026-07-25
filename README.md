@@ -29,7 +29,7 @@ Bluetooth adapter or an ESPHome Bluetooth proxy.
 > been validated with a physical SESAME 5 Pro through an ESPHome Bluetooth
 > proxy. Proxy failover and longer-term operation still need validation.
 
-## Supported models
+## ✅ Supported models
 
 | Model | Status |
 | --- | --- |
@@ -43,7 +43,7 @@ except SESAME 5 Pro. Related models will not appear in the setup flow merely
 because they share the CANDY HOUSE Bluetooth service UUID. Support will be
 enabled model by model only after protocol and hardware validation.
 
-## Why this project exists
+## 🔐 Why this project exists
 
 The core goal is to keep SESAME-specific logic in Home Assistant instead of
 turning an ESP32 into a dedicated lock controller:
@@ -94,7 +94,7 @@ The YAML only provides BLE transport. Authentication, encryption, state and
 lock commands are implemented by this Home Assistant integration using the
 `gomalock` Python library.
 
-## First release
+## ✨ First release
 
 - automatic SESAME 5 Pro Bluetooth discovery
 - setup through the Home Assistant UI
@@ -107,7 +107,7 @@ lock commands are implemented by this Home Assistant integration using the
   connection loss
 - redacted diagnostics
 
-## Entities
+## 📊 Entities
 
 | Entity | Default | Description |
 | --- | --- | --- |
@@ -134,7 +134,7 @@ includes any required reconnect and login time. A successful result means the
 command was accepted by SESAME; mechanical failure is still reported through
 the lock entity's jammed state.
 
-## Installation
+## 📦 Installation
 
 The repository can be installed as a HACS custom repository:
 
@@ -175,7 +175,7 @@ During setup, provide exactly one of:
 Credentials are verified by making a real encrypted BLE login before the config
 entry is saved.
 
-## Project boundaries
+## 🧭 Project boundaries
 
 - `ha-sesame-ble` is the Home Assistant integration and is maintained as this
   project's primary deliverable.
@@ -189,7 +189,7 @@ entry is saved.
 See [Research and design](docs/research-and-design.md) for the full analysis,
 decisions, risks and implementation plan.
 
-## References
+## 🔗 References
 
 - [CANDY HOUSE API documentation](https://github.com/CANDY-HOUSE/API_document)
 - [gomalock upstream](https://github.com/meronepy/gomalock)

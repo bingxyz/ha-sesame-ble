@@ -27,7 +27,7 @@ ESPHome Bluetooth Proxy 連接。
 > 第一版功能已完成並有自動化測試，也已透過 ESPHome Bluetooth Proxy
 > 與實體 SESAME 5 Pro 驗證。Proxy 自動切換與長期運作穩定性仍需持續驗證。
 
-## 支援型號
+## ✅ 支援型號
 
 | 型號 | 狀態 |
 | --- | --- |
@@ -40,7 +40,7 @@ ESPHome Bluetooth Proxy 連接。
 型號共用 CANDY HOUSE Bluetooth service UUID，也不會出現在設定流程中。
 每個型號都必須通過協定及實體硬體驗證後才會開放支援。
 
-## 為什麼需要這個專案
+## 🔐 為什麼需要這個專案
 
 核心目標是將 SESAME 專用邏輯保留在 Home Assistant，而不是把 ESP32
 變成專用門鎖控制器：
@@ -85,7 +85,7 @@ bluetooth_proxy:
 這份 YAML 只提供 BLE 傳輸。驗證、加密、狀態及門鎖命令則由本 Home
 Assistant 整合使用 `gomalock` Python 函式庫實作。
 
-## 第一版功能
+## ✨ 第一版功能
 
 - 自動探索 SESAME 5 Pro Bluetooth 裝置
 - 透過 Home Assistant UI 設定
@@ -97,7 +97,7 @@ Assistant 整合使用 `gomalock` Python 函式庫實作。
 - 有上限的重連退避，並在斷線後重新選擇 Home Assistant BLE 路徑
 - 隱去敏感資料的診斷資訊
 
-## 實體
+## 📊 實體
 
 | 實體 | 預設 | 說明 |
 | --- | --- | --- |
@@ -121,7 +121,7 @@ Assistant 整合使用 `gomalock` Python 函式庫實作。
 時間；成功代表 SESAME 已接受命令，機械操作失敗仍會由門鎖實體的卡住
 狀態回報。
 
-## 安裝
+## 📦 安裝
 
 本 repository 可作為 HACS 自訂 repository 安裝：
 
@@ -160,7 +160,7 @@ uv run mypy custom_components
 
 儲存 config entry 前，整合會進行一次真正的加密 BLE 登入來驗證憑證。
 
-## 專案界線
+## 🧭 專案界線
 
 - `ha-sesame-ble` 是 Home Assistant 整合，也是本專案的主要維護成果。
 - `gomalock` 仍是獨立的通訊協定函式庫；本 workspace 包含向下相容的
@@ -172,7 +172,7 @@ uv run mypy custom_components
 完整分析、決策、風險與實作規劃請參考
 [研究與設計](docs/research-and-design.md)（英文）。
 
-## 參考資料
+## 🔗 參考資料
 
 - [CANDY HOUSE API 文件](https://github.com/CANDY-HOUSE/API_document)
 - [gomalock 上游專案](https://github.com/meronepy/gomalock)
