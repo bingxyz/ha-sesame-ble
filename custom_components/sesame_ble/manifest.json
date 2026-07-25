@@ -1,9 +1,6 @@
 {
   "domain": "sesame_ble",
   "name": "Sesame BLE",
-  "version": "0.1.0",
-  "documentation": "https://github.com/bingxyz/ha-sesame-ble",
-  "issue_tracker": "https://github.com/bingxyz/ha-sesame-ble/issues",
   "bluetooth": [
     {
       "connectable": true,
@@ -14,10 +11,13 @@
   "codeowners": ["@bingxyz"],
   "config_flow": true,
   "dependencies": ["bluetooth_adapters"],
+  "documentation": "https://github.com/bingxyz/ha-sesame-ble",
   "integration_type": "device",
   "iot_class": "local_push",
+  "issue_tracker": "https://github.com/bingxyz/ha-sesame-ble/issues",
   "loggers": ["gomalock"],
   "requirements": [
-    "gomalock @ https://github.com/bingxyz/gomalock/archive/005d7c4c7ad9b343841ef48b63f86da69eba2679.zip"
-  ]
+    "gomalock@https://github.com/bingxyz/gomalock/archive/005d7c4c7ad9b343841ef48b63f86da69eba2679.zip"
+  ],
+  "version": "0.1.0"
 }
