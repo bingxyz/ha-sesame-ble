@@ -1,5 +1,11 @@
 # HA Sesame BLE
 
+[![GitHub Release](https://img.shields.io/github/v/release/bingxyz/ha-sesame-ble?color=ff336c)](https://github.com/bingxyz/ha-sesame-ble/releases)
+[![CI](https://github.com/bingxyz/ha-sesame-ble/actions/workflows/ci.yml/badge.svg)](https://github.com/bingxyz/ha-sesame-ble/actions/workflows/ci.yml)
+[![Validate](https://github.com/bingxyz/ha-sesame-ble/actions/workflows/validate.yml/badge.svg)](https://github.com/bingxyz/ha-sesame-ble/actions/workflows/validate.yml)
+[![HACS Custom](https://img.shields.io/badge/HACS-Custom-41BDF5)](https://www.hacs.xyz/docs/faq/custom_repositories/)
+[![License](https://img.shields.io/badge/license-MIT-29b6ff)](LICENSE)
+
 [English](README.md) | [日本語](README.ja.md) | [繁體中文](README.zh-TW.md)
 
 `ha-sesame-ble` 是直接從 Home Assistant 控制 CANDY HOUSE SESAME 智慧
