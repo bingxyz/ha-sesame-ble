@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out ha-sesame-ble
+        uses: actions/checkout@v6
+        with:
+          path: ha-sesame-ble
+
+      - name: Check out the pinned gomalock fork
+        uses: actions/checkout@v6
+        with:
+          repository: bingxyz/gomalock
+          ref: 005d7c4c7ad9b343841ef48b63f86da69eba2679
+          path: gomalock
+
+      - name: Set up uv and Python
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          enable-cache: true
+          python-version: "3.14"
+          working-directory: ha-sesame-ble
+
+      - name: Install dependencies
+        run: uv sync --frozen
+        working-directory: ha-sesame-ble
+
+      - name: Run tests
+        run: uv run pytest
+        working-directory: ha-sesame-ble
+
+      - name: Run Ruff
+        run: uv run ruff check .
+        working-directory: ha-sesame-ble
+
+      - name: Run mypy
+        run: uv run mypy custom_components
+        working-directory: ha-sesame-ble

@@ -2,6 +2,8 @@
   "domain": "sesame_ble",
   "name": "Sesame BLE",
   "version": "0.1.0",
+  "documentation": "https://github.com/bingxyz/ha-sesame-ble",
+  "issue_tracker": "https://github.com/bingxyz/ha-sesame-ble/issues",
   "bluetooth": [
     {
       "connectable": true,
@@ -9,7 +11,7 @@
       "manufacturer_id": 1370
     }
   ],
-  "codeowners": [],
+  "codeowners": ["@bingxyz"],
   "config_flow": true,
   "dependencies": ["bluetooth_adapters"],
   "integration_type": "device",
