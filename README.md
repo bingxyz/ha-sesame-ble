@@ -53,6 +53,7 @@ lock commands are implemented by this Home Assistant integration using the
 - explicit lock and unlock actions
 - lock state, jam indication and availability
 - angle, battery percentage, battery voltage and Bluetooth signal strength sensors
+- last Home Assistant operation result and end-to-end duration diagnostics
 - bounded reconnect backoff and fresh Home Assistant BLE route selection after
   connection loss
 - redacted diagnostics
@@ -84,12 +85,26 @@ includes any required reconnect and login time. A successful result means the
 command was accepted by SESAME; mechanical failure is still reported through
 the lock entity's jammed state.
 
-## Installation status
+## Installation
 
-The repository has the structure required by HACS. During hardware testing, the
-manifest installs `gomalock` 2.2.0 from an immutable commit in the maintained
-[`bingxyz/gomalock`](https://github.com/bingxyz/gomalock) fork. That fork adds
-Home Assistant BLE routing and disconnect hooks on top of the original
+The repository can be installed as a HACS custom repository:
+
+1. Open **HACS** in Home Assistant.
+2. Open the menu and select **Custom repositories**.
+3. Add `https://github.com/bingxyz/ha-sesame-ble` with category
+   **Integration**.
+4. Open **Sesame BLE** in HACS and select **Download**.
+5. Restart Home Assistant.
+6. Leave a connectable Bluetooth adapter or ESPHome Bluetooth proxy in range.
+   Home Assistant will discover a supported SESAME 5 Pro automatically.
+
+HACS installs integrations under the Home Assistant configuration directory's
+`custom_components/` folder. Future releases can be installed and upgraded
+from the same HACS repository entry.
+
+The `v0.1.0` manifest installs `gomalock` 2.2.0 from an immutable commit in the
+maintained [`bingxyz/gomalock`](https://github.com/bingxyz/gomalock) fork. That
+fork adds Home Assistant BLE routing and disconnect hooks on top of the original
 [`meronepy/gomalock`](https://github.com/meronepy/gomalock) project. This can
 later switch back to a PyPI release if the transport hooks are accepted
 upstream.
@@ -102,11 +117,6 @@ uv run pytest
 uv run ruff check .
 uv run mypy custom_components
 ```
-
-After this repository is hosted on GitHub, add it as a HACS custom repository,
-install **Sesame BLE**, restart Home Assistant, and leave at least one
-connectable Bluetooth adapter or ESPHome proxy in range. The integration will
-appear in the discovered integrations list when it sees a SESAME 5 Pro.
 
 During setup, provide exactly one of:
 
