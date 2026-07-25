@@ -1,18 +1,35 @@
 # HA Sesame BLE
 
-`ha-sesame-ble` is a Home Assistant custom integration for local Bluetooth
-control of CANDY HOUSE SESAME smart locks.
+<p align="center">
+  <img src="custom_components/sesame_ble/brand/icon.png" alt="HA Sesame BLE icon" width="180">
+</p>
 
-Version `0.1.x` supports **SESAME 5 Pro only**. Home Assistant owns the SESAME
-protocol session and connects through any reachable connectable Bluetooth
-adapter, including ESPHome Bluetooth proxies.
+[![GitHub Release](https://img.shields.io/github/v/release/bingxyz/ha-sesame-ble?color=ff336c)](https://github.com/bingxyz/ha-sesame-ble/releases)
+[![CI](https://github.com/bingxyz/ha-sesame-ble/actions/workflows/ci.yml/badge.svg)](https://github.com/bingxyz/ha-sesame-ble/actions/workflows/ci.yml)
+[![Validate](https://github.com/bingxyz/ha-sesame-ble/actions/workflows/validate.yml/badge.svg)](https://github.com/bingxyz/ha-sesame-ble/actions/workflows/validate.yml)
+[![HACS Custom](https://img.shields.io/badge/HACS-Custom-41BDF5)](https://www.hacs.xyz/docs/faq/custom_repositories/)
+[![License](https://img.shields.io/badge/license-MIT-29b6ff)](LICENSE)
+
+[English](README.md) | [日本語](README.ja.md) | [繁體中文](README.zh-TW.md)
+
+`ha-sesame-ble` is a Home Assistant custom integration that controls CANDY
+HOUSE SESAME smart locks directly while keeping ESP32 devices as standard,
+replaceable Bluetooth proxies—no SESAME-specific ESPHome component or firmware
+is required.
+
+This design is useful even with only one ESP32. Home Assistant owns the SESAME
+authentication, encryption, state and command logic; the ESP32 provides only
+generic BLE transport and can continue serving other Bluetooth devices.
+
+Version `0.1.x` supports **SESAME 5 Pro only** and can connect through a local
+Bluetooth adapter or an ESPHome Bluetooth proxy.
 
 > [!IMPORTANT]
 > The first implementation is complete, covered by automated tests, and has
 > been validated with a physical SESAME 5 Pro through an ESPHome Bluetooth
 > proxy. Proxy failover and longer-term operation still need validation.
 
-## Supported models
+## ✅ Supported models
 
 | Model | Status |
 | --- | --- |
@@ -26,17 +43,35 @@ except SESAME 5 Pro. Related models will not appear in the setup flow merely
 because they share the CANDY HOUSE Bluetooth service UUID. Support will be
 enabled model by model only after protocol and hardware validation.
 
-## Why this project exists
+## 🔐 Why this project exists
+
+The core goal is to keep SESAME-specific logic in Home Assistant instead of
+turning an ESP32 into a dedicated lock controller:
+
+- use an ordinary ESPHome Bluetooth proxy without custom components
+- update, test and debug the integration without recompiling or flashing an
+  ESP32
+- keep credentials, device state, automations and backup/restore workflows
+  centered in Home Assistant
+- reuse the same ESP32 for other Bluetooth devices
+- replace the ESP32 without migrating SESAME-specific firmware or logic
+
+In short, the ESP32 acts as a replaceable Bluetooth network adapter, not as the
+lock controller.
 
 The existing Home Assistant `sesame` integration is a legacy cloud-polling
 integration for the original SESAME Lock and its Wi-Fi Access Point. It is not a
 local BLE integration for SESAME 5 Pro.
 
 The third-party `esphome-sesame3` project can control SESAME directly from one
-ESP32, but the protocol session is then owned by that ESP32. Other Bluetooth
-proxies cannot take over if that ESP32 goes offline.
+ESP32, but the protocol session and lock-specific logic are then owned by that
+ESP32. That approach can be useful without Home Assistant or when control logic
+must run independently on the microcontroller; it is not required when Home
+Assistant is already the center of the installation.
 
-This project instead keeps ordinary ESPHome Bluetooth proxies interchangeable:
+Support for multiple Bluetooth proxies is an additional benefit of keeping the
+protocol in Home Assistant: all proxies share the same integration state, and
+Home Assistant can select a fresh reachable BLE route after a disconnection.
 
 ```text
 SESAME 5 Pro
@@ -59,7 +94,7 @@ The YAML only provides BLE transport. Authentication, encryption, state and
 lock commands are implemented by this Home Assistant integration using the
 `gomalock` Python library.
 
-## First release
+## ✨ First release
 
 - automatic SESAME 5 Pro Bluetooth discovery
 - setup through the Home Assistant UI
@@ -72,7 +107,7 @@ lock commands are implemented by this Home Assistant integration using the
   connection loss
 - redacted diagnostics
 
-## Entities
+## 📊 Entities
 
 | Entity | Default | Description |
 | --- | --- | --- |
@@ -99,7 +134,7 @@ includes any required reconnect and login time. A successful result means the
 command was accepted by SESAME; mechanical failure is still reported through
 the lock entity's jammed state.
 
-## Installation
+## 📦 Installation
 
 The repository can be installed as a HACS custom repository:
 
@@ -140,7 +175,7 @@ During setup, provide exactly one of:
 Credentials are verified by making a real encrypted BLE login before the config
 entry is saved.
 
-## Project boundaries
+## 🧭 Project boundaries
 
 - `ha-sesame-ble` is the Home Assistant integration and is maintained as this
   project's primary deliverable.
@@ -154,7 +189,7 @@ entry is saved.
 See [Research and design](docs/research-and-design.md) for the full analysis,
 decisions, risks and implementation plan.
 
-## References
+## 🔗 References
 
 - [CANDY HOUSE API documentation](https://github.com/CANDY-HOUSE/API_document)
 - [gomalock upstream](https://github.com/meronepy/gomalock)
