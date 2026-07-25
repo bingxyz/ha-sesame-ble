@@ -10,6 +10,8 @@ from homeassistant.const import EntityCategory
 from custom_components.sesame_ble.lock import SesameLockEntity
 from custom_components.sesame_ble.sensor import (
     SENSORS,
+    SesameLastOperationDurationSensor,
+    SesameLastOperationResultSensor,
     SesameSensor,
     SesameSignalStrengthSensor,
 )
@@ -27,6 +29,10 @@ def make_runtime(*, flags: int, position: int = 256) -> SimpleNamespace:
         pending_locked=None,
         mech_status=Sesame5MechStatus(2500, flags, target=0, position=position),
         rssi=-52,
+        last_operation_action="unlock",
+        last_operation_completed_at=None,
+        last_operation_duration=0.842,
+        last_operation_result="success",
         async_add_listener=lambda _listener: lambda: None,
         async_set_locked=AsyncMock(),
     )
@@ -55,6 +61,21 @@ def test_signal_strength_sensor() -> None:
     assert sensor.device_class is SensorDeviceClass.SIGNAL_STRENGTH
     assert sensor.entity_category is EntityCategory.DIAGNOSTIC
     assert sensor.entity_registry_enabled_default is False
+
+
+def test_last_operation_sensors() -> None:
+    """Expose completed HA operation result, context and duration."""
+    runtime = make_runtime(flags=0b00010010)
+    result_sensor = SesameLastOperationResultSensor(runtime)
+    duration_sensor = SesameLastOperationDurationSensor(runtime)
+
+    assert result_sensor.native_value == "success"
+    assert result_sensor.extra_state_attributes["action"] == "unlock"
+    assert result_sensor.available is True
+    assert duration_sensor.native_value == 0.842
+    assert duration_sensor.available is True
+    assert result_sensor.entity_registry_enabled_default is False
+    assert duration_sensor.entity_registry_enabled_default is False
 
 
 def test_unlock_and_jammed_state() -> None:

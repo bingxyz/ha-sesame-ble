@@ -6,6 +6,8 @@ import asyncio
 import logging
 from collections.abc import Callable
 from contextlib import suppress
+from datetime import UTC, datetime
+from time import monotonic
 from typing import cast
 
 from gomalock import Sesame5, Sesame5MechStatus
@@ -44,6 +46,10 @@ class SesameRuntime:
         self.mech_status: Sesame5MechStatus | None = None
         self.pending_locked: bool | None = None
         self.rssi: int | None = None
+        self.last_operation_action: str | None = None
+        self.last_operation_completed_at: datetime | None = None
+        self.last_operation_duration: float | None = None
+        self.last_operation_result: str | None = None
 
         self._listeners: set[Callable[[], None]] = set()
         self._operation_lock = asyncio.Lock()
@@ -172,25 +178,42 @@ class SesameRuntime:
 
     async def async_set_locked(self, *, locked: bool) -> None:
         """Send an explicit desired lock state without blind command replay."""
-        async with self._operation_lock:
-            if not self.device.is_logged_in:
-                await self._async_connect_locked()
-            self.pending_locked = locked
-            self._notify_listeners()
-            try:
+        started_at = monotonic()
+        pending_was_set = False
+        result: str | None = None
+        try:
+            async with self._operation_lock:
+                if not self.device.is_logged_in:
+                    await self._async_connect_locked()
+                self.pending_locked = locked
+                pending_was_set = True
+                self._notify_listeners()
                 if locked:
                     await self.device.lock("Home Assistant")
                 else:
                     await self.device.unlock("Home Assistant")
-            except Exception:
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            result = "failed"
+            if pending_was_set:
                 self.available = False
                 try:
                     await self.device.disconnect()
                 finally:
                     self._handle_unexpected_disconnect(self.device)
-                raise
-            finally:
+            raise
+        else:
+            result = "success"
+        finally:
+            if pending_was_set:
                 self.pending_locked = None
+            if result is not None:
+                self.last_operation_action = "lock" if locked else "unlock"
+                self.last_operation_completed_at = datetime.now(UTC)
+                self.last_operation_duration = round(monotonic() - started_at, 3)
+                self.last_operation_result = result
+            if pending_was_set or result is not None:
                 self._notify_listeners()
 
     async def async_stop(self) -> None:

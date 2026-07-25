@@ -38,6 +38,14 @@
       "angle": {"name": "角度"},
       "battery": {"name": "電量"},
       "battery_voltage": {"name": "電池電壓"},
+      "last_operation_duration": {"name": "上次 HA 操作耗時"},
+      "last_operation_result": {
+        "name": "上次 HA 操作結果",
+        "state": {
+          "failed": "失敗",
+          "success": "成功"
+        }
+      },
       "signal_strength": {"name": "藍牙訊號強度"}
     },
     "binary_sensor": {

@@ -26,9 +26,18 @@ async def async_get_config_entry_diagnostics(
             "device_uuid": runtime.device_uuid,
             "connected": runtime.device.is_connected,
             "logged_in": runtime.device.is_logged_in,
+            "rssi": runtime.rssi,
             "position": status.position if status else None,
             "target": status.target if status else None,
             "battery_voltage": status.battery_voltage if status else None,
             "battery_percentage": status.battery_percentage if status else None,
+            "last_operation_action": runtime.last_operation_action,
+            "last_operation_completed_at": (
+                runtime.last_operation_completed_at.isoformat()
+                if runtime.last_operation_completed_at
+                else None
+            ),
+            "last_operation_duration": runtime.last_operation_duration,
+            "last_operation_result": runtime.last_operation_result,
         },
     }

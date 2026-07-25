@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Any, ClassVar
 
 from gomalock import Sesame5MechStatus
 from homeassistant.components.sensor import (
@@ -19,6 +20,7 @@ from homeassistant.const import (
     SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
     EntityCategory,
     UnitOfElectricPotential,
+    UnitOfTime,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
@@ -76,6 +78,8 @@ async def async_setup_entry(
         [
             *(SesameSensor(runtime, description) for description in SENSORS),
             SesameSignalStrengthSensor(runtime),
+            SesameLastOperationResultSensor(runtime),
+            SesameLastOperationDurationSensor(runtime),
         ]
     )
 
@@ -123,3 +127,64 @@ class SesameSignalStrengthSensor(SesameEntity, SensorEntity):
     def native_value(self) -> int | None:
         """Return RSSI from the latest connectable BLE advertisement."""
         return self.runtime.rssi
+
+
+class SesameLastOperationResultSensor(SesameEntity, SensorEntity):
+    """Expose the result of the last Home Assistant lock operation."""
+
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_entity_registry_enabled_default = False
+    _attr_options: ClassVar[list[str]] = ["success", "failed"]
+    _attr_translation_key = "last_operation_result"
+
+    def __init__(self, runtime: SesameRuntime) -> None:
+        """Initialize the last-operation-result sensor."""
+        super().__init__(runtime)
+        self._attr_unique_id = f"{runtime.device_uuid}_last_operation_result"
+
+    @property
+    def available(self) -> bool:
+        """Keep a completed result visible after a connection failure."""
+        return self.runtime.last_operation_result is not None
+
+    @property
+    def native_value(self) -> str | None:
+        """Return whether the last Home Assistant operation succeeded."""
+        return self.runtime.last_operation_result
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return context for the last completed operation."""
+        return {
+            "action": self.runtime.last_operation_action,
+            "completed_at": self.runtime.last_operation_completed_at,
+            "duration_seconds": self.runtime.last_operation_duration,
+        }
+
+
+class SesameLastOperationDurationSensor(SesameEntity, SensorEntity):
+    """Expose end-to-end duration of the last Home Assistant operation."""
+
+    _attr_device_class = SensorDeviceClass.DURATION
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_entity_registry_enabled_default = False
+    _attr_native_unit_of_measurement = UnitOfTime.SECONDS
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_suggested_display_precision = 3
+    _attr_translation_key = "last_operation_duration"
+
+    def __init__(self, runtime: SesameRuntime) -> None:
+        """Initialize the last-operation-duration sensor."""
+        super().__init__(runtime)
+        self._attr_unique_id = f"{runtime.device_uuid}_last_operation_duration"
+
+    @property
+    def available(self) -> bool:
+        """Keep a completed duration visible after a connection failure."""
+        return self.runtime.last_operation_duration is not None
+
+    @property
+    def native_value(self) -> float | None:
+        """Return the last end-to-end operation duration in seconds."""
+        return self.runtime.last_operation_duration

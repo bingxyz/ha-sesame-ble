@@ -66,6 +66,8 @@ lock commands are implemented by this Home Assistant integration using the
 | Battery | enabled | Estimated battery percentage |
 | Battery voltage | disabled | Raw voltage reported by the lock |
 | Signal strength | disabled | RSSI from the latest connectable BLE advertisement |
+| Last HA operation result | disabled | Success or failure of the last HA command |
+| Last HA operation duration | disabled | End-to-end duration of the last HA command |
 | Low battery | disabled | SESAME low-battery flag |
 
 State comes from SESAME mechanical-status notifications. If the lock is outside
@@ -76,6 +78,11 @@ Signal strength is diagnostic data from the latest advertisement received by
 Home Assistant or an ESPHome Bluetooth proxy. It is not a live measurement from
 the persistent GATT connection and may remain unchanged while the lock is
 connected.
+
+Operation diagnostics cover only commands sent by Home Assistant. Duration
+includes any required reconnect and login time. A successful result means the
+command was accepted by SESAME; mechanical failure is still reported through
+the lock entity's jammed state.
 
 ## Installation status
 

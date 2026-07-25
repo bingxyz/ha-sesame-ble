@@ -38,6 +38,14 @@
       "angle": {"name": "Angle"},
       "battery": {"name": "Battery"},
       "battery_voltage": {"name": "Battery voltage"},
+      "last_operation_duration": {"name": "Last HA operation duration"},
+      "last_operation_result": {
+        "name": "Last HA operation result",
+        "state": {
+          "failed": "Failed",
+          "success": "Success"
+        }
+      },
       "signal_strength": {"name": "Signal strength"}
     },
     "binary_sensor": {

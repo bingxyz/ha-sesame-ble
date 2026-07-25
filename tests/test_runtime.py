@@ -2,6 +2,7 @@
 
 from unittest.mock import AsyncMock, Mock, patch
 
+import pytest
 from gomalock import Sesame5MechStatus
 from homeassistant.components.bluetooth import BluetoothChange
 
@@ -74,12 +75,29 @@ async def test_runtime_connects_and_sends_explicit_commands() -> None:
 
         await runtime.async_set_locked(locked=False)
         await runtime.async_set_locked(locked=True)
+        assert runtime.last_operation_action == "lock"
+        assert runtime.last_operation_completed_at is not None
+        assert runtime.last_operation_duration is not None
+        assert runtime.last_operation_result == "success"
+
+        device.unlock.side_effect = TimeoutError
+        with (
+            patch.object(runtime, "_handle_unexpected_disconnect"),
+            pytest.raises(TimeoutError),
+        ):
+            await runtime.async_set_locked(locked=False)
+        assert runtime.last_operation_action == "unlock"
+        assert runtime.last_operation_duration is not None
+        assert runtime.last_operation_result == "failed"
+
         await runtime.async_stop()
 
     assert runtime.available is False
     device.connect.assert_awaited_once_with()
     device.login.assert_awaited_once_with()
-    device.unlock.assert_awaited_once_with("Home Assistant")
+    assert device.unlock.await_count == 2
+    device.unlock.assert_awaited_with("Home Assistant")
     device.lock.assert_awaited_once_with("Home Assistant")
-    device.disconnect.assert_awaited_once_with()
+    assert device.disconnect.await_count == 2
+    device.disconnect.assert_awaited_with()
     unsubscribe_bluetooth.assert_called_once_with()
