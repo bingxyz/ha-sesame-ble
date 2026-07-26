@@ -1,0 +1,156 @@
+name: Release
+
+run-name: Release v${{ inputs.version }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version already committed to main (for example, 0.1.3)
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_VERSION: ${{ inputs.version }}
+
+    steps:
+      - name: Require the main branch
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF" != "refs/heads/main" ]]; then
+            echo "::error::Run releases from the main branch, not $GITHUB_REF."
+            exit 1
+          fi
+
+      - name: Check out ha-sesame-ble
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          path: ha-sesame-ble
+
+      - name: Check out the pinned gomalock fork
+        uses: actions/checkout@v6
+        with:
+          repository: bingxyz/gomalock
+          ref: 005d7c4c7ad9b343841ef48b63f86da69eba2679
+          path: gomalock
+
+      - name: Set up uv and Python
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          enable-cache: true
+          python-version: "3.14"
+          working-directory: ha-sesame-ble
+
+      - name: Validate the release version
+        working-directory: ha-sesame-ble
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          import re
+          import tomllib
+
+          root = Path.cwd()
+          expected = os.environ["RELEASE_VERSION"]
+          if re.fullmatch(r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)", expected) is None:
+              raise SystemExit(
+                  f"Invalid version {expected!r}; use a semantic version such as 0.1.3."
+              )
+
+          manifest = json.loads(
+              (root / "custom_components/sesame_ble/manifest.json").read_text()
+          )
+          project = tomllib.loads((root / "pyproject.toml").read_text())
+          lock = tomllib.loads((root / "uv.lock").read_text())
+          lock_versions = {
+              package["version"]
+              for package in lock["package"]
+              if package["name"] == "ha-sesame-ble"
+          }
+
+          versions = {
+              "custom_components/sesame_ble/manifest.json": manifest["version"],
+              "pyproject.toml": project["project"]["version"],
+          }
+          if len(lock_versions) == 1:
+              versions["uv.lock"] = lock_versions.pop()
+          else:
+              versions["uv.lock"] = f"unexpected entries: {sorted(lock_versions)}"
+
+          mismatches = {
+              filename: version
+              for filename, version in versions.items()
+              if version != expected
+          }
+          if mismatches:
+              details = ", ".join(
+                  f"{filename}={version}" for filename, version in mismatches.items()
+              )
+              raise SystemExit(
+                  f"Release version {expected} does not match every version file: "
+                  f"{details}"
+              )
+
+          print(f"Validated release version {expected} in all version files.")
+          PY
+
+          if git show-ref --verify --quiet "refs/tags/v${RELEASE_VERSION}"; then
+            echo "::error::Tag v${RELEASE_VERSION} already exists."
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: uv sync --frozen
+        working-directory: ha-sesame-ble
+
+      - name: Run tests
+        run: uv run pytest
+        working-directory: ha-sesame-ble
+
+      - name: Run Ruff
+        run: uv run ruff check .
+        working-directory: ha-sesame-ble
+
+      - name: Run mypy
+        run: uv run mypy custom_components
+        working-directory: ha-sesame-ble
+
+      - name: Verify main has not moved
+        working-directory: ha-sesame-ble
+        shell: bash
+        run: |
+          git fetch origin main
+          current_sha="$(git rev-parse HEAD)"
+          main_sha="$(git rev-parse origin/main)"
+          if [[ "$current_sha" != "$main_sha" ]]; then
+            echo "::error::main moved from $current_sha to $main_sha during validation."
+            echo "::error::Run the release workflow again from the latest main."
+            exit 1
+          fi
+
+      - name: Create GitHub Release
+        working-directory: ha-sesame-ble
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          current_sha="$(git rev-parse HEAD)"
+          gh release create "v${RELEASE_VERSION}" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$current_sha" \
+            --title "Sesame BLE v${RELEASE_VERSION}" \
+            --notes "Update Sesame BLE from HACS and restart Home Assistant. Existing devices, credentials, entities, and automations require no changes." \
+            --generate-notes
