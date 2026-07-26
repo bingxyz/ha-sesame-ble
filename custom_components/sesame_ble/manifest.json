@@ -19,5 +19,5 @@
   "requirements": [
     "gomalock@https://github.com/bingxyz/gomalock/archive/005d7c4c7ad9b343841ef48b63f86da69eba2679.zip"
   ],
-  "version": "0.1.1"
+  "version": "0.1.2"
 }
