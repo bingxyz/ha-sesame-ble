@@ -27,7 +27,10 @@ Bluetooth adapter or an ESPHome Bluetooth proxy.
 > [!IMPORTANT]
 > The first implementation is complete, covered by automated tests, and has
 > been validated with a physical SESAME 5 Pro through an ESPHome Bluetooth
-> proxy. Proxy failover and longer-term operation still need validation.
+> proxy. Proxy failover has also been validated with physical hardware,
+> including recovery through a newly available proxy and automatic switching
+> to an already-online proxy after the active proxy was powered off. Long-term
+> reliability under repeated failover remains under observation.
 
 ## 🏠 Home Assistant device page
 
