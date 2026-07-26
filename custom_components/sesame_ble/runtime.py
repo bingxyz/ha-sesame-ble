@@ -84,6 +84,19 @@ class SesameRuntime:
             listener()
 
     @callback
+    def _refresh_rssi_from_bluetooth_cache(self) -> bool:
+        """Refresh RSSI from HA's latest cached connectable advertisement."""
+        service_info = bluetooth.async_last_service_info(
+            self.hass,
+            self.address,
+            connectable=True,
+        )
+        if service_info is None or service_info.rssi == self.rssi:
+            return False
+        self.rssi = service_info.rssi
+        return True
+
+    @callback
     def _handle_mech_status(
         self,
         _device: Sesame5,
@@ -92,6 +105,7 @@ class SesameRuntime:
         """Store a mechanical-status publish from gomalock."""
         self.mech_status = status
         self.available = True
+        self._refresh_rssi_from_bluetooth_cache()
         self._notify_listeners()
 
     @callback
@@ -124,13 +138,7 @@ class SesameRuntime:
     async def async_start(self) -> None:
         """Connect and authenticate the persistent session."""
         self._stopping = False
-        service_info = bluetooth.async_last_service_info(
-            self.hass,
-            self.address,
-            connectable=True,
-        )
-        if service_info is not None:
-            self.rssi = service_info.rssi
+        self._refresh_rssi_from_bluetooth_cache()
         if self._unsubscribe_bluetooth is None:
             self._unsubscribe_bluetooth = bluetooth.async_register_callback(
                 self.hass,
@@ -149,6 +157,7 @@ class SesameRuntime:
             await self.device.login()
         self.mech_status = self.device.mech_status
         self.available = True
+        self._refresh_rssi_from_bluetooth_cache()
         self._notify_listeners()
 
     async def _async_reconnect(self) -> None:
@@ -213,7 +222,8 @@ class SesameRuntime:
                 self.last_operation_completed_at = datetime.now(UTC)
                 self.last_operation_duration = round(monotonic() - started_at, 3)
                 self.last_operation_result = result
-            if pending_was_set or result is not None:
+            rssi_changed = self._refresh_rssi_from_bluetooth_cache()
+            if pending_was_set or result is not None or rssi_changed:
                 self._notify_listeners()
 
     async def async_stop(self) -> None:
