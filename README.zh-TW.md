@@ -43,8 +43,8 @@ Home Assistant 實體。介面語言會跟隨 Home Assistant 設定；上圖使�
 | SESAME 5 US | `0.1.x` 尚未啟用；底層函式庫支援，但本整合尚未驗證 |
 | SESAME 6 系列及其他所有 CANDY HOUSE 產品 | 不支援 |
 
-本整合會刻意拒絕 SESAME 5 Pro 以外型號的 Bluetooth 探索結果。即使相關
-型號共用 CANDY HOUSE Bluetooth service UUID，也不會出現在設定流程中。
+本整合會刻意拒絕 SESAME 5 Pro 以外型號的 Bluetooth 探索結果。
+即使相關型號共用 CANDY HOUSE Bluetooth service UUID，也不會出現在設定流程中。
 每個型號都必須通過協定及實體硬體驗證後才會開放支援。
 
 ## 🔐 為什麼需要這個專案
