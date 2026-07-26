@@ -51,7 +51,7 @@ async def test_runtime_connects_and_sends_explicit_commands() -> None:
         patch(
             "custom_components.sesame_ble.runtime.bluetooth.async_last_service_info",
             return_value=service_info,
-        ),
+        ) as last_service_info,
         patch(
             "custom_components.sesame_ble.runtime.bluetooth.async_register_callback",
             return_value=unsubscribe_bluetooth,
@@ -65,15 +65,26 @@ async def test_runtime_connects_and_sends_explicit_commands() -> None:
             name="Entrance",
         )
 
+        # The selected connectable route may update while connect/login runs.
+        last_service_info.side_effect = [
+            service_info,
+            make_service_info(rssi=-57),
+        ]
         await runtime.async_start()
+        last_service_info.side_effect = None
         bluetooth_callback = register_callback.call_args.args[1]
-        assert runtime.rssi == -52
+        assert runtime.rssi == -57
 
         newer_service_info = make_service_info(rssi=-61)
         bluetooth_callback(newer_service_info, BluetoothChange.ADVERTISEMENT)
         assert runtime.rssi == -61
 
+        # HA updates its Bluetooth history for RSSI-only changes without
+        # dispatching an integration callback. An operation must refresh that
+        # cached value explicitly.
+        last_service_info.return_value = make_service_info(rssi=-73)
         await runtime.async_set_locked(locked=False)
+        assert runtime.rssi == -73
         await runtime.async_set_locked(locked=True)
         assert runtime.last_operation_action == "lock"
         assert runtime.last_operation_completed_at is not None
