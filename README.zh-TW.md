@@ -27,6 +27,13 @@ ESPHome Bluetooth Proxy 連接。
 > 第一版功能已完成並有自動化測試，也已透過 ESPHome Bluetooth Proxy
 > 與實體 SESAME 5 Pro 驗證。Proxy 自動切換與長期運作穩定性仍需持續驗證。
 
+## 🏠 Home Assistant 裝置頁面
+
+![整合至 Home Assistant 的 SESAME 5 Pro 裝置頁面](docs/images/home-assistant-device-ja.jpg)
+
+門鎖、角度、電池、Bluetooth 訊號強度與操作診斷，都會顯示為原生的
+Home Assistant 實體。介面語言會跟隨 Home Assistant 設定；上圖使用日文。
+
 ## ✅ 支援型號
 
 | 型號 | 狀態 |
