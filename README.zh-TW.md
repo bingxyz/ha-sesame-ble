@@ -25,7 +25,9 @@ ESPHome Bluetooth Proxy 連接。
 
 > [!IMPORTANT]
 > 第一版功能已完成並有自動化測試，也已透過 ESPHome Bluetooth Proxy
-> 與實體 SESAME 5 Pro 驗證。Proxy 自動切換與長期運作穩定性仍需持續驗證。
+> 與實體 SESAME 5 Pro 驗證。Proxy 自動切換也已透過實體硬體驗證，包括另一顆
+> Proxy 隨後上線時的恢復，以及作用中的 Proxy 斷電後自動切換到另一顆已在線
+> Proxy。長期反覆切換的穩定性仍持續觀察。
 
 ## 🏠 Home Assistant 裝置頁面
 
