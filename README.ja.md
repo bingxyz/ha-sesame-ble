@@ -29,6 +29,13 @@ ESP32が1台だけでも、この設計には利点があります。SESAMEの�
 > 経由で実機のSESAME 5 Proを使った検証も完了しています。Proxyの
 > フェイルオーバーと長期運用については、引き続き検証が必要です。
 
+## 🏠 Home Assistantのデバイスページ
+
+![Home Assistantに統合されたSESAME 5 Proのデバイスページ](docs/images/home-assistant-device-ja.jpg)
+
+ロック、角度、バッテリー、Bluetooth信号強度、操作診断が、Home Assistant
+標準のエンティティとして表示されます。
+
 ## ✅ 対応モデル
 
 | モデル | 対応状況 |

@@ -29,6 +29,14 @@ Bluetooth adapter or an ESPHome Bluetooth proxy.
 > been validated with a physical SESAME 5 Pro through an ESPHome Bluetooth
 > proxy. Proxy failover and longer-term operation still need validation.
 
+## 🏠 Home Assistant device page
+
+![SESAME 5 Pro device page in Home Assistant](docs/images/home-assistant-device-ja.jpg)
+
+The lock, angle, battery, Bluetooth signal strength and operation diagnostics
+are exposed as native Home Assistant entities. The interface follows the
+language configured in Home Assistant; the example above uses Japanese.
+
 ## ✅ Supported models
 
 | Model | Status |
