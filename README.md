@@ -127,6 +127,9 @@ lock commands are implemented by this Home Assistant integration using the
 | Battery | enabled | Estimated battery percentage |
 | Battery voltage | disabled | Raw voltage reported by the lock |
 | Signal strength | disabled | RSSI from the latest connectable BLE advertisement |
+| Bluetooth route | disabled | Active Home Assistant Bluetooth scanner or ESPHome proxy, with source and RSSI diagnostics |
+| Bluetooth route selection | disabled | Route used by the next manual reconnect; resets to automatic after restart |
+| Reconnect using selected route | disabled | Manually reconnect through the selected Bluetooth route |
 | Last HA operation result | disabled | Success or failure of the last HA command |
 | Last HA operation duration | disabled | End-to-end duration of the last HA command |
 | Low battery | disabled | SESAME low-battery flag |

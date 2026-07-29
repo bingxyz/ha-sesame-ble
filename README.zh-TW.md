@@ -115,6 +115,9 @@ Assistant 整合使用 `gomalock` Python 函式庫實作。
 | 電量 | 啟用 | 預估電量百分比 |
 | 電池電壓 | 停用 | 門鎖回報的原始電壓 |
 | 訊號強度 | 停用 | 最近一次可連線 BLE 廣播的 RSSI |
+| 目前藍牙路徑 | 停用 | 目前使用的 Home Assistant Bluetooth scanner 或 ESPHome Proxy，以及 source／RSSI 診斷資訊 |
+| 藍牙路徑選擇 | 停用 | 下次手動重新連線使用的路徑；重新啟動後會回到自動選擇 |
+| 使用選定路徑重新連線 | 停用 | 透過選定的 Bluetooth 路徑手動重新連線 |
 | 上次 HA 操作結果 | 停用 | 上次 HA 命令成功或失敗 |
 | 上次 HA 操作耗時 | 停用 | 上次 HA 命令的端到端耗時 |
 | 低電量 | 停用 | SESAME 的低電量旗標 |
