@@ -47,6 +47,13 @@
         }
       },
       "signal_strength": {"name": "藍牙訊號強度"}
+      ,"bluetooth_route": {"name": "目前藍牙路徑"}
+    },
+    "select": {
+      "bluetooth_route": {"name": "藍牙路徑"}
+    },
+    "button": {
+      "bluetooth_route_reconnect": {"name": "使用選定路徑重新連線"}
     },
     "binary_sensor": {
       "battery_low": {"name": "低電量"}

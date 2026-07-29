@@ -78,6 +78,7 @@ async def async_setup_entry(
         [
             *(SesameSensor(runtime, description) for description in SENSORS),
             SesameSignalStrengthSensor(runtime),
+            SesameBluetoothRouteSensor(runtime),
             SesameLastOperationResultSensor(runtime),
             SesameLastOperationDurationSensor(runtime),
         ]
@@ -127,6 +128,35 @@ class SesameSignalStrengthSensor(SesameEntity, SensorEntity):
     def native_value(self) -> int | None:
         """Return RSSI from the latest connectable BLE advertisement."""
         return self.runtime.rssi
+
+
+class SesameBluetoothRouteSensor(SesameEntity, SensorEntity):
+    """Expose the Bluetooth scanner used by the active connection."""
+
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_entity_registry_enabled_default = False
+    _attr_translation_key = "bluetooth_route"
+
+    def __init__(self, runtime: SesameRuntime) -> None:
+        """Initialize the active Bluetooth route sensor."""
+        super().__init__(runtime)
+        self._attr_unique_id = f"{runtime.device_uuid}_bluetooth_route"
+
+    @property
+    def native_value(self) -> str | None:
+        """Return the active scanner name."""
+        route = self.runtime.active_route
+        return route.name if route else None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return source and route RSSI details."""
+        route = self.runtime.active_route
+        return {
+            "source": route.source if route else None,
+            "rssi": route.rssi if route else None,
+            "selected_source": self.runtime.selected_route_source or "auto",
+        }
 
 
 class SesameLastOperationResultSensor(SesameEntity, SensorEntity):
