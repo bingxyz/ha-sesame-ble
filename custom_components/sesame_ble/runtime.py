@@ -98,7 +98,7 @@ class SesameRuntime:
     @staticmethod
     def _route_label(route: BluetoothRoute) -> str:
         """Return a stable, informative route option label."""
-        return f"{route.name} ({route.rssi} dBm) [{route.source}]"
+        return f"{route.name} [{route.source}]"
 
     @property
     def selected_route_option(self) -> str:
@@ -115,11 +115,6 @@ class SesameRuntime:
         if option == AUTO_ROUTE_SOURCE:
             self.async_select_route(option)
             return
-        if option.endswith("]") and "[" in option:
-            source = option.rsplit("[", 1)[1][:-1]
-            if source:
-                self.async_select_route(source)
-                return
         for route in self.bluetooth_routes:
             if self._route_label(route) == option:
                 self.async_select_route(route.source)
@@ -144,14 +139,20 @@ class SesameRuntime:
 
     async def async_reconnect_selected_route(self) -> None:
         """Reconnect the persistent session using the selected route."""
-        async with self._operation_lock:
-            self.available = False
-            self.mech_status = None
-            self.pending_locked = None
-            self.active_route = None
-            self._notify_listeners()
-            await self.device.disconnect()
-            await self._async_connect_locked()
+        try:
+            async with self._operation_lock:
+                self.available = False
+                self.mech_status = None
+                self.pending_locked = None
+                self.active_route = None
+                self._notify_listeners()
+                await self.device.disconnect()
+                await self._async_connect_locked()
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            self._handle_unexpected_disconnect(self.device)
+            raise
 
     @callback
     def async_add_listener(self, listener: Callable[[], None]) -> Callable[[], None]:

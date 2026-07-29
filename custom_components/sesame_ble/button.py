@@ -33,6 +33,11 @@ class SesameBluetoothRouteReconnectButton(SesameEntity, ButtonEntity):
         super().__init__(runtime)
         self._attr_unique_id = f"{runtime.device_uuid}_bluetooth_route_reconnect"
 
+    @property
+    def available(self) -> bool:
+        """Keep manual reconnect available while the SESAME is disconnected."""
+        return True
+
     async def async_press(self) -> None:
         """Reconnect using the selected Bluetooth route."""
         await self.runtime.async_reconnect_selected_route()

@@ -34,6 +34,11 @@ class SesameBluetoothRouteSelect(SesameEntity, SelectEntity):
         self._attr_unique_id = f"{runtime.device_uuid}_bluetooth_route_select"
 
     @property
+    def available(self) -> bool:
+        """Keep route selection available while the SESAME is disconnected."""
+        return True
+
+    @property
     def options(self) -> list[str]:
         """Return automatic and currently discovered route sources."""
         return self.runtime.route_options

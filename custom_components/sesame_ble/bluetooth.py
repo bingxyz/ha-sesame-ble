@@ -104,6 +104,7 @@ def make_ble_device_resolver(
                         route.advertisement,
                         route.ble_device,
                     )
+            return None
 
         ble_device = bluetooth.async_ble_device_from_address(
             hass,
@@ -121,10 +122,19 @@ def make_ble_device_resolver(
         if advertisement is None:
             return None
         if route_selected:
+            active_route = next(
+                (
+                    candidate
+                    for candidate in get_bluetooth_routes(hass, address)
+                    if candidate.source == service_info.source
+                ),
+                None,
+            )
             route_selected(
-                BluetoothRoute(
+                active_route
+                or BluetoothRoute(
                     source=service_info.source,
-                    name=service_info.name or service_info.source,
+                    name=service_info.source,
                     rssi=service_info.rssi,
                     ble_device=ble_device,
                     advertisement=advertisement,

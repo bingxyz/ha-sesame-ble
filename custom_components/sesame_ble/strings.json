@@ -47,8 +47,8 @@
           "success": "Success"
         }
       },
-      "signal_strength": {"name": "Signal strength"}
-      ,"bluetooth_route": {"name": "Bluetooth route"}
+      "signal_strength": {"name": "Signal strength"},
+      "bluetooth_route": {"name": "Bluetooth route"}
     },
     "select": {
       "bluetooth_route": {"name": "Bluetooth route"}
