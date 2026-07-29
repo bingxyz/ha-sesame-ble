@@ -1,10 +1,12 @@
 """Tests for Home Assistant Bluetooth adaptation."""
 
+from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
 import pytest
 
 from custom_components.sesame_ble.bluetooth import (
+    get_bluetooth_routes,
     make_ble_device_resolver,
     parse_sesame_advertisement,
 )
@@ -49,3 +51,125 @@ async def test_resolver_uses_current_ha_route() -> None:
     assert result.advertisement_data.device_uuid == TEST_UUID
     get_device.assert_called_once_with(hass, TEST_ADDRESS, connectable=True)
     get_info.assert_called_once_with(hass, TEST_ADDRESS, connectable=True)
+
+
+def test_get_bluetooth_routes_returns_each_scanner_sorted_by_rssi() -> None:
+    """Expose each connectable scanner path, strongest first."""
+    hass = Mock()
+    weak = make_service_info(rssi=-78)
+    strong = make_service_info(rssi=-48)
+    weak_scanner = SimpleNamespace(source="proxy-weak", name="Weak proxy")
+    strong_scanner = SimpleNamespace(source="proxy-strong", name="Strong proxy")
+    weak_device = Mock(
+        scanner=weak_scanner,
+        advertisement=weak.advertisement,
+        ble_device=weak.device,
+    )
+    strong_device = Mock(
+        scanner=strong_scanner,
+        advertisement=strong.advertisement,
+        ble_device=strong.device,
+    )
+
+    with patch(
+        "custom_components.sesame_ble.bluetooth.bluetooth.async_scanner_devices_by_address",
+        return_value=[weak_device, strong_device],
+    ):
+        routes = get_bluetooth_routes(hass, TEST_ADDRESS)
+
+    assert [route.source for route in routes] == ["proxy-strong", "proxy-weak"]
+    assert routes[0].name == "Strong proxy"
+
+
+@pytest.mark.asyncio
+async def test_resolver_uses_selected_route() -> None:
+    """Resolve the BLE device from the explicitly selected scanner."""
+    hass = Mock()
+    service_info = make_service_info()
+    scanner_device = Mock(
+        scanner=Mock(source="proxy-selected", name="Selected proxy"),
+        advertisement=service_info.advertisement,
+        ble_device=service_info.device,
+    )
+    def selected_route() -> str:
+        return "proxy-selected"
+
+    selected = Mock()
+
+    with patch(
+        "custom_components.sesame_ble.bluetooth.bluetooth.async_scanner_devices_by_address",
+        return_value=[scanner_device],
+    ):
+        result = await make_ble_device_resolver(
+            hass,
+            route_source=selected_route,
+            route_selected=selected,
+        )(TEST_ADDRESS)
+
+    assert result is not None
+    assert result.ble_device is service_info.device
+    selected.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_resolver_does_not_fall_back_when_selected_route_is_missing() -> None:
+    """Do not silently use an automatic route when a manual route is selected."""
+    hass = Mock()
+
+    with (
+        patch(
+            "custom_components.sesame_ble.bluetooth.bluetooth.async_scanner_devices_by_address",
+            return_value=[],
+        ),
+        patch(
+            "custom_components.sesame_ble.bluetooth.bluetooth.async_ble_device_from_address",
+        ) as get_device,
+        patch(
+            "custom_components.sesame_ble.bluetooth.bluetooth.async_last_service_info",
+        ) as get_info,
+    ):
+        result = await make_ble_device_resolver(
+            hass,
+            route_source=lambda: "proxy-missing",
+        )(TEST_ADDRESS)
+
+    assert result is None
+    get_device.assert_not_called()
+    get_info.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_resolver_reports_auto_route_scanner_name() -> None:
+    """Report the scanner name rather than the SESAME advertisement name."""
+    hass = Mock()
+    service_info = make_service_info()
+    scanner_device = Mock(
+        scanner=SimpleNamespace(source="proxy-a", name="Living room proxy"),
+        advertisement=service_info.advertisement,
+        ble_device=service_info.device,
+    )
+    selected = Mock()
+
+    with (
+        patch(
+            "custom_components.sesame_ble.bluetooth.bluetooth.async_ble_device_from_address",
+            return_value=service_info.device,
+        ),
+        patch(
+            "custom_components.sesame_ble.bluetooth.bluetooth.async_last_service_info",
+            return_value=service_info,
+        ),
+        patch(
+            "custom_components.sesame_ble.bluetooth.bluetooth.async_scanner_devices_by_address",
+            return_value=[scanner_device],
+        ),
+    ):
+        result = await make_ble_device_resolver(
+            hass,
+            route_selected=selected,
+        )(TEST_ADDRESS)
+
+    assert result is not None
+    route = selected.call_args.args[0]
+    assert route.source == "proxy-a"
+    assert route.name == "Living room proxy"

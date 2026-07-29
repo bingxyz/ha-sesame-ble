@@ -47,7 +47,14 @@
           "success": "Success"
         }
       },
-      "signal_strength": {"name": "Signal strength"}
+      "signal_strength": {"name": "Signal strength"},
+      "bluetooth_route": {"name": "Bluetooth route"}
+    },
+    "select": {
+      "bluetooth_route": {"name": "Bluetooth route"}
+    },
+    "button": {
+      "bluetooth_route_reconnect": {"name": "Reconnect using selected route"}
     },
     "binary_sensor": {
       "battery_low": {"name": "Low battery"}

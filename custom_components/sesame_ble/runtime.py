@@ -20,8 +20,13 @@ from homeassistant.components.bluetooth import (
 )
 from homeassistant.core import HomeAssistant, callback
 
-from .bluetooth import make_ble_client_factory, make_ble_device_resolver
-from .const import RECONNECT_MAX_DELAY
+from .bluetooth import (
+    BluetoothRoute,
+    get_bluetooth_routes,
+    make_ble_client_factory,
+    make_ble_device_resolver,
+)
+from .const import AUTO_ROUTE_SOURCE, RECONNECT_MAX_DELAY
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -51,6 +56,8 @@ class SesameRuntime:
         self.last_operation_completed_at: datetime | None = None
         self.last_operation_duration: float | None = None
         self.last_operation_result: str | None = None
+        self.selected_route_source: str | None = None
+        self.active_route: BluetoothRoute | None = None
 
         self._listeners: set[Callable[[], None]] = set()
         self._operation_lock = asyncio.Lock()
@@ -63,9 +70,89 @@ class SesameRuntime:
             mech_status_callback=self._handle_mech_status,
             unexpected_disconnect_callback=self._handle_unexpected_disconnect,
             reconnect_attempts=0,
-            ble_device_resolver=make_ble_device_resolver(hass),
+            ble_device_resolver=make_ble_device_resolver(
+                hass,
+                route_source=lambda: self.selected_route_source,
+                route_selected=self._handle_route_selected,
+            ),
             ble_client_factory=make_ble_client_factory(name),
         )
+
+    @property
+    def bluetooth_routes(self) -> tuple[BluetoothRoute, ...]:
+        """Return the currently discovered connectable routes."""
+        return get_bluetooth_routes(self.hass, self.address)
+
+    @property
+    def route_options(self) -> list[str]:
+        """Return automatic and currently discovered route labels."""
+        routes = self.bluetooth_routes
+        options = [AUTO_ROUTE_SOURCE, *(self._route_label(route) for route in routes)]
+        if (
+            self.selected_route_source
+            and self.selected_route_source not in {route.source for route in routes}
+        ):
+            options.append(self.selected_route_source)
+        return options
+
+    @staticmethod
+    def _route_label(route: BluetoothRoute) -> str:
+        """Return a stable, informative route option label."""
+        return f"{route.name} [{route.source}]"
+
+    @property
+    def selected_route_option(self) -> str:
+        """Return the select option representing the configured route."""
+        if self.selected_route_source is None:
+            return AUTO_ROUTE_SOURCE
+        for route in self.bluetooth_routes:
+            if route.source == self.selected_route_source:
+                return self._route_label(route)
+        return self.selected_route_source
+
+    def select_route_option(self, option: str) -> None:
+        """Store the source represented by a route select option."""
+        if option == AUTO_ROUTE_SOURCE:
+            self.async_select_route(option)
+            return
+        for route in self.bluetooth_routes:
+            if self._route_label(route) == option:
+                self.async_select_route(route.source)
+                return
+        if option in self.route_options:
+            self.async_select_route(option)
+            return
+        raise ValueError(f"Unknown Bluetooth route: {option}")
+
+    @callback
+    def _handle_route_selected(self, route: BluetoothRoute) -> None:
+        """Store the route used by the current connection attempt."""
+        self.active_route = route
+
+    @callback
+    def async_select_route(self, source: str) -> None:
+        """Set the route to use on the next connection."""
+        self.selected_route_source = (
+            None if source == AUTO_ROUTE_SOURCE else source
+        )
+        self._notify_listeners()
+
+    async def async_reconnect_selected_route(self) -> None:
+        """Reconnect the persistent session using the selected route."""
+        try:
+            async with self._operation_lock:
+                self.available = False
+                self.mech_status = None
+                self.pending_locked = None
+                self.active_route = None
+                self._notify_listeners()
+                await self.device.disconnect()
+                await self._async_connect_locked()
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            self._handle_unexpected_disconnect(self.device)
+            raise
 
     @callback
     def async_add_listener(self, listener: Callable[[], None]) -> Callable[[], None]:
@@ -127,6 +214,7 @@ class SesameRuntime:
         self.available = False
         self.mech_status = None
         self.pending_locked = None
+        self.active_route = None
         self._notify_listeners()
         if self._stopping:
             return
@@ -254,4 +342,5 @@ class SesameRuntime:
             self.available = False
             self.mech_status = None
             self.pending_locked = None
+            self.active_route = None
             self._notify_listeners()

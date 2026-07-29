@@ -1,5 +1,6 @@
 """Tests for the persistent Sesame runtime."""
 
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
@@ -115,6 +116,91 @@ async def test_runtime_connects_and_sends_explicit_commands() -> None:
     unsubscribe_bluetooth.assert_called_once_with()
 
 
+def test_route_options_use_stable_labels_without_rssi() -> None:
+    """Keep route select options stable when advertisement RSSI changes."""
+    device = Mock()
+    hass = Mock()
+    route = SimpleNamespace(
+        source="proxy-a",
+        name="Living room proxy",
+        rssi=-52,
+    )
+
+    with (
+        patch(
+            "custom_components.sesame_ble.runtime.Sesame5",
+            return_value=device,
+        ),
+        patch(
+            "custom_components.sesame_ble.runtime.make_ble_device_resolver",
+            return_value=Mock(),
+        ),
+        patch(
+            "custom_components.sesame_ble.runtime.make_ble_client_factory",
+            return_value=Mock(),
+        ),
+        patch(
+            "custom_components.sesame_ble.runtime.get_bluetooth_routes",
+            return_value=(route,),
+        ),
+    ):
+        runtime = SesameRuntime(
+            hass,
+            address=TEST_ADDRESS,
+            device_uuid=str(TEST_UUID),
+            secret_key=TEST_SECRET,
+            name="Entrance",
+        )
+
+        assert runtime.route_options == ["auto", "Living room proxy [proxy-a]"]
+        runtime.select_route_option("Living room proxy [proxy-a]")
+
+    assert runtime.selected_route_source == "proxy-a"
+
+
+async def test_manual_reconnect_failure_schedules_background_reconnect() -> None:
+    """Keep retrying after a selected route cannot be connected."""
+    device = Mock()
+    device.disconnect = AsyncMock()
+    hass = Mock()
+
+    with (
+        patch(
+            "custom_components.sesame_ble.runtime.Sesame5",
+            return_value=device,
+        ),
+        patch(
+            "custom_components.sesame_ble.runtime.make_ble_device_resolver",
+            return_value=Mock(),
+        ),
+        patch(
+            "custom_components.sesame_ble.runtime.make_ble_client_factory",
+            return_value=Mock(),
+        ),
+    ):
+        runtime = SesameRuntime(
+            hass,
+            address=TEST_ADDRESS,
+            device_uuid=str(TEST_UUID),
+            secret_key=TEST_SECRET,
+            name="Entrance",
+        )
+
+    with (
+        patch.object(
+            runtime,
+            "_async_connect_locked",
+            AsyncMock(side_effect=TimeoutError),
+        ),
+        patch.object(runtime, "_handle_unexpected_disconnect") as disconnected,
+        pytest.raises(TimeoutError),
+    ):
+        await runtime.async_reconnect_selected_route()
+
+    device.disconnect.assert_awaited_once_with()
+    disconnected.assert_called_once_with(device)
+
+
 async def test_runtime_stop_ignores_proxy_disconnect_error() -> None:
     """Complete shutdown when a disconnected Bluetooth proxy returns an error."""
     device = Mock()
@@ -159,3 +245,4 @@ async def test_runtime_stop_ignores_proxy_disconnect_error() -> None:
     listener.assert_called_once_with()
     assert runtime.available is False
     assert runtime.pending_locked is None
+    assert runtime.active_route is None

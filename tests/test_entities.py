@@ -1,13 +1,17 @@
 """Tests for lock, angle and battery entities."""
 
 from types import SimpleNamespace
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 
 from gomalock import Sesame5MechStatus
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.const import EntityCategory
 
+from custom_components.sesame_ble.button import (
+    SesameBluetoothRouteReconnectButton,
+)
 from custom_components.sesame_ble.lock import SesameLockEntity
+from custom_components.sesame_ble.select import SesameBluetoothRouteSelect
 from custom_components.sesame_ble.sensor import (
     SENSORS,
     SesameLastOperationDurationSensor,
@@ -97,3 +101,26 @@ async def test_explicit_lock_and_unlock_commands() -> None:
 
     assert runtime.async_set_locked.await_args_list[0].kwargs == {"locked": False}
     assert runtime.async_set_locked.await_args_list[1].kwargs == {"locked": True}
+
+
+async def test_route_controls_remain_available_while_disconnected() -> None:
+    """Allow route changes and reconnect attempts while the lock is unavailable."""
+    runtime = make_runtime(flags=0b00010010)
+    runtime.available = False
+    runtime.route_options = ["auto", "Living room proxy [proxy-a]"]
+    runtime.selected_route_option = "auto"
+    runtime.select_route_option = Mock()
+    runtime.async_reconnect_selected_route = AsyncMock()
+    select = SesameBluetoothRouteSelect(runtime)
+    button = SesameBluetoothRouteReconnectButton(runtime)
+
+    assert select.available is True
+    assert button.available is True
+
+    await select.async_select_option("Living room proxy [proxy-a]")
+    await button.async_press()
+
+    runtime.select_route_option.assert_called_once_with(
+        "Living room proxy [proxy-a]"
+    )
+    runtime.async_reconnect_selected_route.assert_awaited_once_with()

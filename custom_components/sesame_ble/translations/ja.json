@@ -46,7 +46,14 @@
           "success": "成功"
         }
       },
-      "signal_strength": {"name": "Bluetooth信号強度"}
+      "signal_strength": {"name": "Bluetooth信号強度"},
+      "bluetooth_route": {"name": "現在のBluetoothルート"}
+    },
+    "select": {
+      "bluetooth_route": {"name": "Bluetoothルート"}
+    },
+    "button": {
+      "bluetooth_route_reconnect": {"name": "選択したルートで再接続"}
     },
     "binary_sensor": {
       "battery_low": {"name": "バッテリー残量低下"}
