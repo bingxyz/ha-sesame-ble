@@ -3,6 +3,7 @@
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
+from bleak.exc import BleakError
 from gomalock import Sesame5MechStatus
 from homeassistant.components.bluetooth import BluetoothChange
 
@@ -112,3 +113,49 @@ async def test_runtime_connects_and_sends_explicit_commands() -> None:
     assert device.disconnect.await_count == 2
     device.disconnect.assert_awaited_with()
     unsubscribe_bluetooth.assert_called_once_with()
+
+
+async def test_runtime_stop_ignores_proxy_disconnect_error() -> None:
+    """Complete shutdown when a disconnected Bluetooth proxy returns an error."""
+    device = Mock()
+    device.disconnect = AsyncMock(
+        side_effect=BleakError("esp32-proxy: EOF received")
+    )
+    hass = Mock()
+    unsubscribe_bluetooth = Mock()
+    listener = Mock()
+
+    with (
+        patch(
+            "custom_components.sesame_ble.runtime.Sesame5",
+            return_value=device,
+        ),
+        patch(
+            "custom_components.sesame_ble.runtime.make_ble_device_resolver",
+            return_value=Mock(),
+        ),
+        patch(
+            "custom_components.sesame_ble.runtime.make_ble_client_factory",
+            return_value=Mock(),
+        ),
+    ):
+        runtime = SesameRuntime(
+            hass,
+            address=TEST_ADDRESS,
+            device_uuid=str(TEST_UUID),
+            secret_key=TEST_SECRET,
+            name="Entrance",
+        )
+
+    runtime.available = True
+    runtime.pending_locked = True
+    runtime._unsubscribe_bluetooth = unsubscribe_bluetooth
+    runtime.async_add_listener(listener)
+
+    await runtime.async_stop()
+
+    device.disconnect.assert_awaited_once_with()
+    unsubscribe_bluetooth.assert_called_once_with()
+    listener.assert_called_once_with()
+    assert runtime.available is False
+    assert runtime.pending_locked is None

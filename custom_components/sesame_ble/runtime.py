@@ -10,6 +10,7 @@ from datetime import UTC, datetime
 from time import monotonic
 from typing import cast
 
+from bleak.exc import BleakError
 from gomalock import Sesame5, Sesame5MechStatus
 from homeassistant.components import bluetooth
 from homeassistant.components.bluetooth import (
@@ -239,9 +240,18 @@ class SesameRuntime:
             reconnect_task.cancel()
             with suppress(asyncio.CancelledError):
                 await reconnect_task
-        async with self._operation_lock:
-            await self.device.disconnect()
-        self.available = False
-        self.mech_status = None
-        self.pending_locked = None
-        self._notify_listeners()
+        try:
+            async with self._operation_lock:
+                try:
+                    await self.device.disconnect()
+                except BleakError:
+                    _LOGGER.debug(
+                        "Ignoring Bluetooth disconnect error while stopping %s",
+                        self.name,
+                        exc_info=True,
+                    )
+        finally:
+            self.available = False
+            self.mech_status = None
+            self.pending_locked = None
+            self._notify_listeners()
